@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2인용 경쟁 테트리스</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-top: 0;
+            color: #00ffcc;
+            text-shadow: 0 0 10px #00ffcc;
+        }
+        .game-container {
+            display: flex;
+            gap: 50px;
+            margin-top: 20px;
+        }
+        .player-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            background-color: #000;
+            border: 4px solid #333;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        #p1-canvas { border-color: #ff3366; box-shadow: 0 0 20px #ff336666; }
+        #p2-canvas { border-color: #33ccff; box-shadow: 0 0 20px #33ccff66; }
+        .controls {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .attack-warning {
+            color: red;
+            height: 20px;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <h1>VERSUS TETRIS</h1>
+    
+    <div class="game-container">
+        <!-- 플레이어 1 -->
+        <div class="player-area">
+            <div class="score" id="p1-score" style="color: #ff3366;">Score: 0</div>
+            <div class="attack-warning" id="p1-warning"></div>
+            <canvas id="p1-canvas" width="300" height="600"></canvas>
+            <div class="controls">
+                <b>Player 1 (Red)</b><br>
+                W: 회전 | A: 왼쪽 | D: 오른쪽 | S: 빨리 내리기
+            </div>
+        </div>
+
+        <!-- 플레이어 2 -->
+        <div class="player-area">
+            <div class="score" id="p2-score" style="color: #33ccff;">Score: 0</div>
+            <div class="attack-warning" id="p2-warning"></div>
+            <canvas id="p2-canvas" width="300" height="600"></canvas>
+            <div class="controls">
+                <b>Player 2 (Blue)</b><br>
+                ↑: 회전 | ←: 왼쪽 | →: 오른쪽 | ↓: 빨리 내리기
+            </div>
+        </div>
+    </div>
+
+<script>
+// 테트리스 블록 모양 정의
+const SHAPES = [
+    [],
+    [[1, 1, 1, 1]], // I
+    [[2, 0, 0], [2, 2, 2]], // J
+    [[0, 0, 3], [3, 3, 3]], // L
+    [[4, 4], [4, 4]], // O
+    [[0, 5, 5], [5, 5, 0]], // S
+    [[0, 6, 0], [6, 6, 6]], // T
+    [[7, 7, 0], [0, 7, 7]]  // Z
+];
+
+// 블록 색상 정의
+const COLORS = [
+    null, '#00ffff', '#0000ff', '#ff7f00', '#ffff00', '#00ff00', '#800080', '#ff0000', '#555555' // 8번 색상은 공격받은 쓰레기 블록
+];
+
+class Tetris {
+    constructor(canvasId, scoreId, warningId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.scoreElement = document.getElementById(scoreId);
+        this.warningElement = document.getElementById(warningId);
+        
+        this.cols = 10;
+        this.rows = 20;
+        this.blockSize = 30;
+        
+        this.board = this.createMatrix(this.cols, this.rows);
+        this.score = 0;
+        this.opponent = null; // 상대방 객체 연결용
+        
+        this.dropCounter = 0;
+        this.dropInterval = 1000;
+        
+        this.gameOver = false;
+        this.resetPiece();
+    }
+
+    createMatrix(w, h) {
+        const matrix = [];
+        while (h--) {
+            matrix.push(new Array(w).fill(0));
+        }
+        return matrix;
+    }
+
+    resetPiece() {
+        const typeId = Math.floor(Math.random() * 7) + 1;
+        this.piece = {
+            matrix: SHAPES[typeId],
+            pos: { x: Math.floor(this.cols / 2) - Math.floor(SHAPES[typeId][0].length / 2), y: 0 }
+        };
+
+        // 생성되자마자 충돌하면 게임 오버
+        if (this.collide(this.board, this.piece)) {
+            this.gameOver = true;
+            alert('Game Over!');
+        }
+    }
+
+    drawMatrix(matrix, offset) {
+        matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    this.ctx.fillStyle = COLORS[value];
+                    this.ctx.fillRect((x + offset.x) * this.blockSize, (y + offset.y) * this.blockSize, this.blockSize, this.blockSize);
+                    this.ctx.strokeStyle = '#000';
+                    this.ctx.strokeRect((x + offset.x) * this.blockSize, (y + offset.y) * this.blockSize, this.blockSize, this.blockSize);
+                }
+            });
+        });
+    }
+
+    draw() {
+        this.ctx.fillStyle = '#000';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.drawMatrix(this.board, { x: 0, y: 0 });
+        this.drawMatrix(this.piece.matrix, this.piece.pos);
+    }
+
+    collide(board, piece) {
+        const m = piece.matrix;
+        const o = piece.pos;
+        for (let y = 0; y < m.length; ++y) {
+            for (let x = 0; x < m[y].length; ++x) {
+                if (m[y][x] !== 0 && (board[y + o.y] && board[y + o.y][x + o.x]) !== 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    merge(board, piece) {
+        piece.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    board[y + piece.pos.y][x + piece.pos.x] = value;
+                }
+            });
+        });
+    }
+
+    rotate(matrix) {
+        const N = matrix.length;
+        const M = matrix[0].length;
+        const result = this.createMatrix(N, M);
+        for (let y = 0; y < N; ++y) {
+            for (let x = 0; x < M; ++x) {
+                result[x][N - 1 - y] = matrix[y][x];
+            }
+        }
+        return result;
+    }
+
+    playerRotate() {
+        const pos = this.piece.pos.x;
+        let offset = 1;
+        this.piece.matrix = this.rotate(this.piece.matrix);
+        while (this.collide(this.board, this.piece)) {
+            this.piece.pos.x += offset;
+            offset = -(offset + (offset > 0 ? 1 : -1));
+            if (offset > this.piece.matrix[0].length) {
+                this.piece.matrix = this.rotate(this.rotate(this.rotate(this.piece.matrix))); // 원래대로
+                this.piece.pos.x = pos;
+                return;
+            }
+        }
+    }
+
+    playerMove(dir) {
+        this.piece.pos.x += dir;
+        if (this.collide(this.board, this.piece)) {
+            this.piece.pos.x -= dir;
+        }
+    }
+
+    playerDrop() {
+        this.piece.pos.y++;
+        if (this.collide(this.board, this.piece)) {
+            this.piece.pos.y--;
+            this.merge(this.board, this.piece);
+            this.resetPiece();
+            this.clearLines();
+        }
+        this.dropCounter = 0;
+    }
+
+    clearLines() {
+        let linesCleared = 0;
+        outer: for (let y = this.rows - 1; y >= 0; --y) {
+            for (let x = 0; x < this.cols; ++x) {
+                if (this.board[y][x] === 0) continue outer;
+            }
+
+            const row = this.board.splice(y, 1)[0].fill(0);
+            this.board.unshift(row);
+            ++y;
+            linesCleared++;
+        }
+
+        if (linesCleared > 0) {
+            this.score += linesCleared * 100;
+            this.scoreElement.innerText = `Score: ${this.score}`;
+            
+            // 상대방에게 공격 (2초 딜레이)
+            if (this.opponent) {
+                this.attackOpponent(linesCleared);
+            }
+        }
+    }
+
+    attackOpponent(lines) {
+        this.opponent.warningElement.innerText = `⚠️ 앗! ${lines}줄 공격 접근 중!`;
+        setTimeout(() => {
+            this.opponent.receiveGarbage(lines);
+            this.opponent.warningElement.innerText = "";
+        }, 2000); // 2초 뒤 공격 적용
+    }
+
+    receiveGarbage(lines) {
+        for (let i = 0; i < lines; i++) {
+            this.board.shift(); // 맨 윗줄 삭제
+            const garbageRow = new Array(this.cols).fill(8); // 8번 색상(회색 쓰레기 블록)
+            const hole = Math.floor(Math.random() * this.cols); // 뚫려있을 랜덤 구멍
+            garbageRow[hole] = 0;
+            this.board.push(garbageRow); // 맨 밑에 쓰레기 줄 추가
+        }
+    }
+
+    update(deltaTime) {
+        if (this.gameOver) return;
+
+        this.dropCounter += deltaTime;
+        if (this.dropCounter > this.dropInterval) {
+            this.playerDrop();
+        }
+        this.draw();
+    }
+}
+
+// 플레이어 1, 2 생성
+const p1 = new Tetris('p1-canvas', 'p1-score', 'p1-warning');
+const p2 = new Tetris('p2-canvas', 'p2-score', 'p2-warning');
+
+// 서로를 상대로 설정 (공격 연동)
+p1.opponent = p2;
+p2.opponent = p1;
+
+// 키보드 입력 처리
+document.addEventListener('keydown', event => {
+    // Player 1 (WASD)
+    if (!p1.gameOver) {
+        if (event.key === 'a' || event.key === 'A') p1.playerMove(-1);
+        if (event.key === 'd' || event.key === 'D') p1.playerMove(1);
+        if (event.key === 's' || event.key === 'S') p1.playerDrop();
+        if (event.key === 'w' || event.key === 'W') p1.playerRotate();
+    }
+
+    // Player 2 (방향키)
+    if (!p2.gameOver) {
+        if (event.key === 'ArrowLeft') p2.playerMove(-1);
+        if (event.key === 'ArrowRight') p2.playerMove(1);
+        if (event.key === 'ArrowDown') p2.playerDrop();
+        if (event.key === 'ArrowUp') p2.playerRotate();
+    }
+});
+
+// 게임 루프
+let lastTime = 0;
+function update(time = 0) {
+    const deltaTime = time - lastTime;
+    lastTime = time;
+
+    p1.update(deltaTime);
+    p2.update(deltaTime);
+
+    requestAnimationFrame(update);
+}
+
+// 게임 시작
+update();
+
+</script>
+</body>
+</html>
