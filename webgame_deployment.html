@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="중학생을 위한 GitHub Pages 게임 배포 수업 슬라이드" />
+  <title>내 게임을 웹에 공개하자! | GitHub Pages 수업</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'Noto Sans KR', 'system-ui', 'sans-serif'],
+            mono: ['Consolas', 'Monaco', 'monospace']
+          },
+          colors: {
+            ink: '#0d1117',
+            panel: '#161b22',
+            line: '#30363d',
+            github: '#2f81f7',
+            mint: '#3fb950',
+            sun: '#f2cc60',
+            coral: '#ff7b72'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #0d1117; }
+    body { overflow: hidden; }
+    .slide { display: none; min-height: 100vh; overflow-y: auto; padding-bottom: 7rem; }
+    .slide.active { display: flex; animation: enter .28s ease-out; }
+    .glass { background: rgba(22, 27, 34, .88); backdrop-filter: blur(10px); }
+    .dot-grid {
+      background-image: radial-gradient(rgba(110,118,129,.22) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+    .code-line::before {
+      content: attr(data-line);
+      display: inline-block;
+      width: 2rem;
+      margin-right: 1rem;
+      color: #6e7681;
+      text-align: right;
+      user-select: none;
+    }
+    .key { box-shadow: 0 2px 0 #010409; }
+    .mock-shadow { box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+    .teacher-notes { display: none; }
+    .teacher-notes.open { display: block; }
+    @keyframes enter {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide.active { animation: none; }
+    }
+    @media print {
+      body { overflow: visible; background: white; }
+      .slide, .slide.active { display: flex !important; min-height: 100vh; page-break-after: always; background: #0d1117 !important; color-adjust: exact; print-color-adjust: exact; }
+      #controls, #progressTrack, #notesPanel { display: none !important; }
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-100 antialiased selection:bg-github/40">
+  <div id="progressTrack" class="fixed left-0 top-0 z-50 h-1 w-full bg-line" aria-hidden="true">
+    <div id="progressBar" class="h-full bg-gradient-to-r from-github to-mint transition-all duration-300"></div>
+  </div>
+
+  <main id="deck" aria-live="polite">
+    <!-- 1. 표지 -->
+    <section class="slide active dot-grid relative items-center justify-center px-6 py-16" data-title="표지" data-notes="학생들에게 오늘 완성할 결과물의 URL 형태를 먼저 보여 주세요. 수업 끝에 친구의 게임 허브를 서로 방문한다고 안내합니다.">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(47,129,247,.18),transparent_34%),radial-gradient(circle_at_20%_80%,rgba(63,185,80,.13),transparent_30%)]"></div>
+      <div class="relative mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[1.15fr_.85fr]">
+        <div>
+          <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-github/40 bg-github/10 px-4 py-2 text-sm font-bold text-blue-300">AI 웹 프로그래밍 · GitHub Pages</div>
+          <h1 class="text-4xl font-black leading-tight tracking-tight sm:text-6xl lg:text-7xl">내 게임을<br /><span class="text-github">웹에 공개하자!</span></h1>
+          <ul class="mt-8 space-y-3 text-lg text-slate-300 sm:text-xl">
+            <li>• GitHub Desktop으로 게임 파일 올리기</li>
+            <li>• GitHub Pages로 나만의 주소 만들기</li>
+            <li>• <code class="rounded bg-panel px-2 py-1 text-sun">index.html</code>에서 여러 게임 연결하기</li>
+          </ul>
+          <p class="mt-8 text-sm text-slate-500">대상: 생성형 AI로 단일 HTML 게임을 만들어 본 중학생</p>
+        </div>
+        <div class="relative" aria-label="시각 자료: 브라우저 안의 게임 허브 미리보기">
+          <div class="mock-shadow overflow-hidden rounded-2xl border border-line bg-panel">
+            <div class="flex items-center gap-2 border-b border-line bg-[#010409] px-4 py-3">
+              <span class="h-3 w-3 rounded-full bg-coral"></span><span class="h-3 w-3 rounded-full bg-sun"></span><span class="h-3 w-3 rounded-full bg-mint"></span>
+              <div class="ml-3 flex-1 rounded-md bg-panel px-3 py-1.5 text-xs text-slate-400">my-id.github.io/game-arcade/</div>
+            </div>
+            <div class="p-6">
+              <div class="mb-5 flex items-center justify-between"><span class="text-xl font-black">🎮 MY GAME ARCADE</span><span class="text-xs text-mint">● LIVE</span></div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="rounded-xl border border-github/40 bg-github/10 p-5"><div class="text-4xl">🚀</div><div class="mt-3 font-bold">우주선 게임</div></div>
+                <div class="rounded-xl border border-mint/40 bg-mint/10 p-5"><div class="text-4xl">🏃</div><div class="mt-3 font-bold">점프 게임</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 text-right text-xs text-slate-500">시각 자료 위치: 오른쪽 · 완성 결과 미리보기</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 오늘의 미션 -->
+    <section class="slide items-center px-6 py-16" data-title="오늘의 미션" data-notes="저장소와 웹사이트의 차이를 질문해 선수 지식을 확인합니다. 학생 답을 들은 뒤 오늘의 네 단계를 손가락으로 함께 세어 봅니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+        <div>
+          <p class="mb-3 font-bold text-github">MISSION 01</p>
+          <h2 class="text-4xl font-black sm:text-5xl">오늘 수업이 끝나면</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 게임 HTML 파일을 새 GitHub 저장소에 올릴 수 있다.</li>
+            <li>• GitHub Pages를 켜고 공개 주소를 확인할 수 있다.</li>
+            <li>• <code class="text-sun">index.html</code>이 첫 화면인 이유를 설명할 수 있다.</li>
+            <li>• 하이퍼링크로 2개 이상의 게임을 연결할 수 있다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 오늘의 4단계 지도</div>
+          <div class="grid gap-3">
+            <div class="flex items-center gap-4 rounded-xl border border-line bg-panel p-4"><span class="grid h-10 w-10 place-items-center rounded-full bg-github font-black">1</span><span class="font-bold">준비: 파일과 이름 점검</span></div>
+            <div class="ml-6 flex items-center gap-4 rounded-xl border border-line bg-panel p-4"><span class="grid h-10 w-10 place-items-center rounded-full bg-github font-black">2</span><span class="font-bold">업로드: Commit → Push</span></div>
+            <div class="ml-12 flex items-center gap-4 rounded-xl border border-line bg-panel p-4"><span class="grid h-10 w-10 place-items-center rounded-full bg-mint font-black">3</span><span class="font-bold">배포: Pages 켜기</span></div>
+            <div class="ml-16 flex items-center gap-4 rounded-xl border border-mint/60 bg-mint/10 p-4"><span class="grid h-10 w-10 place-items-center rounded-full bg-mint font-black">4</span><span class="font-bold text-green-300">연결: 게임 허브 완성</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 핵심 개념 -->
+    <section class="slide items-center px-6 py-16" data-title="세 공간 구분" data-notes="‘내 컴퓨터에서 열리면 인터넷에서도 열릴까?’라고 물어 보세요. 세 공간 사이의 이동을 학생 한 명이 말로 설명하게 합니다.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-github">CONCEPT</p>
+        <h2 class="text-4xl font-black sm:text-5xl">컴퓨터 · GitHub · 웹사이트는 다르다</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
+          <li class="rounded-lg bg-panel p-4">• 내 컴퓨터: 파일을 만들고 고치는 곳</li>
+          <li class="rounded-lg bg-panel p-4">• GitHub 저장소: 파일과 변경 기록을 보관하는 곳</li>
+          <li class="rounded-lg bg-panel p-4">• GitHub Pages: 파일을 웹페이지로 보여 주는 기능</li>
+          <li class="rounded-lg bg-panel p-4">• 수정 후에는 다시 Commit과 Push가 필요함</li>
+        </ul>
+        <div class="mt-10" aria-label="시각 자료: 로컬 폴더에서 저장소를 거쳐 웹사이트로 가는 흐름도">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 · 배포 흐름도</div>
+          <div class="grid items-center gap-3 text-center md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+            <div class="rounded-2xl border border-line bg-panel p-7"><div class="text-5xl">💻</div><div class="mt-3 text-xl font-black">내 컴퓨터</div><div class="mt-1 text-sm text-slate-400">HTML 작성</div></div>
+            <div class="text-3xl text-github">→</div>
+            <div class="rounded-2xl border border-github/60 bg-github/10 p-7"><div class="text-5xl">☁️</div><div class="mt-3 text-xl font-black">GitHub 저장소</div><div class="mt-1 text-sm text-slate-400">Commit + Push</div></div>
+            <div class="text-3xl text-mint">→</div>
+            <div class="rounded-2xl border border-mint/60 bg-mint/10 p-7"><div class="text-5xl">🌍</div><div class="mt-3 text-xl font-black">GitHub Pages</div><div class="mt-1 text-sm text-slate-400">누구나 URL로 접속</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 파일 준비 -->
+    <section class="slide items-center px-6 py-16" data-title="파일 준비" data-notes="학생들이 만든 게임 파일명을 직접 확인하게 하세요. 파일명 바꾸기 전, 각 게임이 브라우저에서 정상 실행되는지도 검사합니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[.9fr_1.1fr]">
+        <div>
+          <p class="mb-3 font-bold text-github">CHECK 01</p>
+          <h2 class="text-4xl font-black sm:text-5xl">업로드 전, 파일부터 정리!</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 새 폴더 이름은 <code class="text-sun">my-game-arcade</code>처럼 짧게 정한다.</li>
+            <li>• 게임 파일은 <code class="text-sun">space-game.html</code>처럼 영문 소문자로 만든다.</li>
+            <li>• 공백 대신 하이픈(<code class="text-sun">-</code>)을 사용한다.</li>
+            <li>• 비밀번호·API 키·개인정보는 절대 넣지 않는다.</li>
+            <li>• 각 파일을 더블클릭해 게임이 실행되는지 확인한다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 파일명 비교표</div>
+          <div class="overflow-hidden rounded-2xl border border-line bg-panel">
+            <div class="grid grid-cols-2 border-b border-line bg-[#010409] px-5 py-3 text-sm font-bold"><span class="text-coral">피해야 할 이름</span><span class="text-mint">추천 이름</span></div>
+            <div class="grid grid-cols-2 gap-px bg-line text-base">
+              <div class="bg-panel p-5">내 게임 최종.html</div><div class="bg-panel p-5 font-mono text-green-300">my-game.html</div>
+              <div class="bg-panel p-5">Game 1.HTML</div><div class="bg-panel p-5 font-mono text-green-300">game-1.html</div>
+              <div class="bg-panel p-5">우주선게임(진짜최종).html</div><div class="bg-panel p-5 font-mono text-green-300">space-game.html</div>
+            </div>
+          </div>
+          <div class="mt-4 rounded-xl border border-sun/40 bg-sun/10 p-4 text-sm text-yellow-100">Windows에서는 같아 보여도 웹에서는 <strong>Game.html</strong>과 <strong>game.html</strong>이 다른 파일일 수 있어요.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. GitHub Desktop -->
+    <section class="slide items-center px-6 py-16" data-title="GitHub Desktop 준비" data-notes="설치가 필요한 학생은 공식 사이트만 사용하게 합니다. 학교 PC에서 설치 권한이 없을 경우 교사가 사전에 설치해 두어야 합니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+        <div>
+          <p class="mb-3 font-bold text-github">REVIEW 01</p>
+          <h2 class="text-4xl font-black sm:text-5xl">GitHub Desktop 준비하기</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 공식 사이트 <a class="text-blue-300 underline underline-offset-4" href="https://desktop.github.com/download/" target="_blank" rel="noopener">desktop.github.com/download</a>에서 내려받는다.</li>
+            <li>• 설치 후 <strong>Sign in to GitHub.com</strong>을 선택한다.</li>
+            <li>• 브라우저에서 본인 GitHub 계정으로 로그인한다.</li>
+            <li>• 화면에 계정 이름이 표시되는지 확인한다.</li>
+          </ul>
+        </div>
+        <div aria-label="시각 자료: GitHub Desktop 로그인 화면 모식도">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 앱 화면 모식도</div>
+          <div class="mock-shadow overflow-hidden rounded-2xl border border-line bg-slate-100 text-slate-900">
+            <div class="flex items-center justify-between bg-slate-800 px-5 py-3 text-sm text-white"><span>GitHub Desktop</span><span>— □ ×</span></div>
+            <div class="grid min-h-72 place-items-center p-8 text-center">
+              <div><div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-slate-900 text-3xl text-white">◉</div><h3 class="mt-5 text-2xl font-black">Welcome to GitHub Desktop</h3><button class="mt-6 rounded-lg bg-[#2da44e] px-6 py-3 font-bold text-white">Sign in to GitHub.com</button><p class="mt-3 text-sm text-slate-500">브라우저 인증 후 앱으로 돌아오기</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 저장소 만들기 -->
+    <section class="slide items-center px-6 py-16" data-title="저장소 만들기" data-notes="실습에서는 새 폴더를 GitHub Desktop이 만들도록 하면 경로 실수가 줄어듭니다. 생성 후 Show in Explorer로 정확한 폴더를 열게 하세요.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-github">REVIEW 02</p>
+        <h2 class="text-4xl font-black sm:text-5xl">새 로컬 저장소 만들기</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
+          <li class="rounded-lg bg-panel p-4">• <strong>File → New repository</strong>를 선택한다.</li>
+          <li class="rounded-lg bg-panel p-4">• Name에 <code class="text-sun">my-game-arcade</code>를 입력한다.</li>
+          <li class="rounded-lg bg-panel p-4">• Local path는 찾기 쉬운 폴더로 정한다.</li>
+          <li class="rounded-lg bg-panel p-4">• <strong>Create repository</strong>를 누른다.</li>
+        </ul>
+        <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_.8fr]">
+          <div>
+            <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 왼쪽 · 새 저장소 창 모식도</div>
+            <div class="rounded-2xl border border-line bg-panel p-6">
+              <div class="mb-5 text-xl font-black">Create a new repository</div>
+              <label class="text-sm text-slate-400">Name</label><div class="mt-1 rounded-md border border-github bg-[#010409] px-4 py-3 font-mono">my-game-arcade</div>
+              <label class="mt-4 block text-sm text-slate-400">Local path</label><div class="mt-1 rounded-md border border-line bg-[#010409] px-4 py-3 font-mono text-slate-400">Documents\GitHub</div>
+              <div class="mt-5 text-right"><span class="inline-block rounded-md bg-mint px-5 py-2 font-bold text-[#071a0c]">Create repository</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 오른쪽 · 실습 행동</div>
+            <div class="rounded-2xl border border-sun/40 bg-sun/10 p-6">
+              <div class="text-3xl">📁</div><h3 class="mt-3 text-xl font-black">Show in Explorer</h3>
+              <p class="mt-3 text-slate-300">열린 폴더 안에 게임 HTML 파일 2개를 복사하세요.</p>
+              <div class="mt-4 rounded-lg bg-[#010409] p-4 font-mono text-sm"><div>my-game-arcade/</div><div class="pl-5 text-blue-300">├─ space-game.html</div><div class="pl-5 text-green-300">└─ jump-game.html</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Commit / Push -->
+    <section class="slide items-center px-6 py-16" data-title="Commit과 Push" data-notes="Commit은 사진 촬영, Push는 온라인 앨범 업로드에 비유할 수 있습니다. 반드시 Commit 다음 Push라는 순서를 말하게 하세요.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[.9fr_1.1fr]">
+        <div>
+          <p class="mb-3 font-bold text-github">REVIEW 03</p>
+          <h2 class="text-4xl font-black sm:text-5xl">Commit하고 GitHub에 Push</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• Changes에서 추가된 HTML 파일을 확인한다.</li>
+            <li>• Summary에 <code class="text-sun">게임 2개 추가</code>라고 적는다.</li>
+            <li>• <strong>Commit to main</strong>으로 변경 기록을 저장한다.</li>
+            <li>• 처음에는 <strong>Publish repository</strong>, 이후에는 <strong>Push origin</strong>을 누른다.</li>
+            <li>• 무료 계정 실습은 <strong>Keep this code private</strong>를 해제해 공개 저장소로 만든다.</li>
+          </ul>
+        </div>
+        <div aria-label="시각 자료: Commit과 Push 순서">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 순서 도표</div>
+          <div class="space-y-3">
+            <div class="flex gap-4 rounded-xl border border-line bg-panel p-5"><span class="text-3xl">📝</span><div><div class="font-black">1. Changes 확인</div><div class="text-sm text-slate-400">추가·수정된 파일 목록</div></div></div>
+            <div class="ml-8 flex gap-4 rounded-xl border border-line bg-panel p-5"><span class="text-3xl">📸</span><div><div class="font-black">2. Commit to main</div><div class="text-sm text-slate-400">현재 상태를 기록</div></div></div>
+            <div class="ml-16 flex gap-4 rounded-xl border border-github/60 bg-github/10 p-5"><span class="text-3xl">☁️</span><div><div class="font-black">3. Publish / Push origin</div><div class="text-sm text-slate-400">GitHub 서버로 전송</div></div></div>
+            <div class="ml-24 flex gap-4 rounded-xl border border-mint/60 bg-mint/10 p-5"><span class="text-3xl">✓</span><div><div class="font-black text-green-300">4. View on GitHub</div><div class="text-sm text-slate-400">브라우저에서 파일 확인</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Pages -->
+    <section class="slide items-center px-6 py-16" data-title="GitHub Pages 켜기" data-notes="GitHub 웹사이트에서 진행합니다. 학생마다 Pages 메뉴 위치가 조금 다를 수 있으므로 Settings 왼쪽의 Code and automation 묶음을 찾게 하세요.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-mint">DEPLOY</p>
+        <h2 class="text-4xl font-black sm:text-5xl">GitHub Pages 켜기</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 md:grid-cols-2">
+          <li class="rounded-lg bg-panel p-4">• GitHub에서 저장소의 <strong>Settings</strong> 탭을 연다.</li>
+          <li class="rounded-lg bg-panel p-4">• 왼쪽 메뉴의 <strong>Pages</strong>를 선택한다.</li>
+          <li class="rounded-lg bg-panel p-4">• Source를 <strong>Deploy from a branch</strong>로 정한다.</li>
+          <li class="rounded-lg bg-panel p-4">• Branch <strong>main</strong>, Folder <strong>/(root)</strong>를 고르고 Save한다.</li>
+        </ul>
+        <div class="mt-8">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 · Pages 설정 화면 모식도</div>
+          <div class="mock-shadow overflow-hidden rounded-2xl border border-line bg-slate-100 text-slate-900">
+            <div class="flex bg-slate-900 px-5 py-3 text-sm font-bold text-white"><span>my-id / my-game-arcade</span><span class="ml-auto text-slate-400">Settings</span></div>
+            <div class="grid md:grid-cols-[220px_1fr]">
+              <div class="border-r border-slate-300 bg-slate-50 p-5 text-sm"><div class="text-slate-500">Code and automation</div><div class="mt-3 rounded-md bg-blue-100 px-3 py-2 font-bold text-blue-700">Pages</div></div>
+              <div class="p-6"><h3 class="text-2xl font-black">GitHub Pages</h3><div class="mt-5 rounded-lg border border-slate-300 p-5"><div class="font-bold">Build and deployment</div><div class="mt-4 grid gap-3 sm:grid-cols-3"><div class="rounded border border-slate-300 p-3">Deploy from a branch ▾</div><div class="rounded border border-slate-300 p-3">main ▾</div><div class="rounded border border-slate-300 p-3">/(root) ▾</div></div><div class="mt-4 text-right"><span class="rounded bg-slate-900 px-5 py-2 font-bold text-white">Save</span></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. URL -->
+    <section class="slide items-center px-6 py-16" data-title="웹 주소 확인" data-notes="Pages 저장 직후에는 준비 중일 수 있습니다. Actions 탭에서 pages build and deployment가 초록색 체크가 될 때까지 기다리게 합니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+        <div>
+          <p class="mb-3 font-bold text-mint">DEPLOY CHECK</p>
+          <h2 class="text-4xl font-black sm:text-5xl">나만의 웹 주소 확인</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 저장소 사이트 주소는 보통 아래 규칙으로 만들어진다.</li>
+            <li>• Pages 설정의 <strong>Visit site</strong> 또는 표시된 URL을 연다.</li>
+            <li>• 배포가 준비되는 동안 잠시 기다린 뒤 새로고침한다.</li>
+            <li>• Actions 탭에서 배포 성공 표시(초록 체크)를 확인한다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · URL 조립 도표</div>
+          <div class="rounded-2xl border border-mint/50 bg-mint/10 p-7">
+            <div class="font-mono text-sm text-slate-400">https://</div>
+            <div class="mt-2 break-all font-mono text-2xl font-black sm:text-3xl"><span class="text-blue-300">사용자이름</span>.github.io/<span class="text-green-300">저장소이름</span>/</div>
+            <div class="mt-6 grid grid-cols-2 gap-3 text-sm"><div class="rounded-lg bg-github/15 p-3"><span class="text-blue-300">사용자이름</span><br />GitHub 계정 ID</div><div class="rounded-lg bg-mint/15 p-3"><span class="text-green-300">저장소이름</span><br />my-game-arcade</div></div>
+          </div>
+          <div class="mt-4 rounded-xl border border-line bg-panel p-4 text-sm text-slate-300">예: <code class="text-sun">https://minsu123.github.io/my-game-arcade/</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. index -->
+    <section class="slide items-center px-6 py-16" data-title="index.html 이론" data-notes="도서관 안내 데스크 비유를 사용합니다. /space-game.html은 특정 책을 직접 찾는 것, /는 안내 데스크인 index.html로 가는 것입니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[.95fr_1.05fr]">
+        <div>
+          <p class="mb-3 font-bold text-sun">CORE THEORY</p>
+          <h2 class="text-4xl font-black sm:text-5xl">왜 이름이 <span class="text-sun">index.html</span>일까?</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 웹서버는 폴더 주소로 접속하면 시작 파일을 찾는다.</li>
+            <li>• GitHub Pages는 맨 위에서 <code class="text-sun">index.html</code> 같은 진입 파일을 찾는다.</li>
+            <li>• 그래서 <code class="text-sun">index.html</code>이 우리 게임 사이트의 첫 화면이 된다.</li>
+            <li>• 다른 이름이면 주소 끝에 파일명까지 직접 적어야 한다.</li>
+          </ul>
+        </div>
+        <div aria-label="시각 자료: 주소 요청이 index.html로 연결되는 과정">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 요청-응답 도표</div>
+          <div class="rounded-2xl border border-line bg-panel p-6">
+            <div class="rounded-lg bg-[#010409] p-4 font-mono text-blue-300">/my-game-arcade/</div>
+            <div class="my-4 text-center text-3xl text-sun">↓ <span class="text-sm">시작 파일 찾기</span></div>
+            <div class="rounded-lg border-2 border-sun bg-sun/10 p-5 text-center"><div class="text-4xl">🏠</div><div class="mt-2 font-mono text-xl font-black text-yellow-200">index.html</div><div class="mt-1 text-sm text-slate-400">게임 선택 메인 페이지</div></div>
+            <div class="mt-4 grid grid-cols-2 gap-3"><div class="rounded-lg bg-github/10 p-3 text-center font-mono text-sm">space-game.html</div><div class="rounded-lg bg-mint/10 p-3 text-center font-mono text-sm">jump-game.html</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. 구조 -->
+    <section class="slide items-center px-6 py-16" data-title="파일 구조" data-notes="파일 3개가 ‘같은 폴더’에 있는지 학생 화면을 돌며 확인합니다. index.html을 게임 파일 중 하나의 이름 변경으로 만들지 말고 새로 만들게 하세요.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+        <div>
+          <p class="mb-3 font-bold text-sun">MAIN PRACTICE 01</p>
+          <h2 class="text-4xl font-black sm:text-5xl">게임 허브의 파일 구조</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 저장소의 맨 위에 <code class="text-sun">index.html</code>을 새로 만든다.</li>
+            <li>• 게임 HTML 2개 이상을 같은 폴더에 둔다.</li>
+            <li>• 파일명과 링크의 글자가 정확히 같아야 한다.</li>
+            <li>• 처음에는 단순한 구조로 성공한 뒤 폴더를 나눈다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 저장소 폴더 트리</div>
+          <div class="rounded-2xl border border-line bg-[#010409] p-7 font-mono text-lg mock-shadow">
+            <div class="text-slate-300">📁 my-game-arcade</div>
+            <div class="mt-4 pl-6 text-yellow-200">├── 🏠 index.html <span class="font-sans text-sm text-slate-500">← 첫 화면</span></div>
+            <div class="mt-3 pl-6 text-blue-300">├── 🚀 space-game.html</div>
+            <div class="mt-3 pl-6 text-green-300">└── 🏃 jump-game.html</div>
+          </div>
+          <div class="mt-4 flex items-center gap-3 rounded-xl border border-mint/50 bg-mint/10 p-4"><span class="text-2xl">✅</span><span>세 파일이 같은 높이에 있으면 <code>./파일명</code>으로 연결 가능!</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. a tag -->
+    <section class="slide items-center px-6 py-16" data-title="하이퍼링크 태그" data-notes="여는 태그, 화면에 보이는 글자, 닫는 태그를 색깔별로 짚습니다. href는 ‘어디로 갈지’라고 읽게 하세요.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-sun">MAIN PRACTICE 02</p>
+        <h2 class="text-4xl font-black sm:text-5xl">클릭해서 이동하는 <code class="text-sun">&lt;a&gt;</code> 태그</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 md:grid-cols-2">
+          <li class="rounded-lg bg-panel p-4">• <code class="text-sun">a</code>는 anchor, 즉 페이지를 연결하는 태그다.</li>
+          <li class="rounded-lg bg-panel p-4">• <code class="text-sun">href</code>에는 이동할 파일 경로를 넣는다.</li>
+          <li class="rounded-lg bg-panel p-4">• 태그 사이 글자는 화면에서 클릭할 부분이다.</li>
+          <li class="rounded-lg bg-panel p-4">• 같은 폴더의 파일은 상대경로 <code class="text-sun">./파일명</code>으로 연결한다.</li>
+        </ul>
+        <div class="mt-8">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 · 코드 해부도</div>
+          <div class="overflow-hidden rounded-2xl border border-line bg-[#010409] mock-shadow">
+            <div class="border-b border-line px-5 py-3 text-sm text-slate-400">index.html</div>
+            <div class="overflow-x-auto p-6 font-mono text-lg sm:text-2xl"><span class="text-blue-300">&lt;a</span> <span class="text-green-300">href=</span><span class="text-yellow-200">&quot;./space-game.html&quot;</span><span class="text-blue-300">&gt;</span><span class="text-white">🚀 우주선 게임 시작</span><span class="text-blue-300">&lt;/a&gt;</span></div>
+            <div class="grid gap-3 border-t border-line p-5 text-sm sm:grid-cols-3"><div><span class="text-blue-300">&lt;a&gt;</span><br /><span class="text-slate-400">링크 시작과 끝</span></div><div><span class="text-yellow-200">./space-game.html</span><br /><span class="text-slate-400">이동할 상대경로</span></div><div><span class="text-white">🚀 우주선 게임 시작</span><br /><span class="text-slate-400">사용자에게 보이는 글자</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. index 실습 -->
+    <section class="slide items-center px-6 py-16" data-title="index.html 작성" data-notes="학생들은 AI에게 이 코드를 생성해 달라고 해도 되지만, href의 파일명은 본인 파일과 직접 대조하게 하세요. 복사 후 저장(Ctrl+S)까지 확인합니다.">
+      <div class="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[.7fr_1.3fr]">
+        <div>
+          <p class="mb-3 font-bold text-sun">MAIN PRACTICE 03</p>
+          <h2 class="text-4xl font-black">index.html 만들기</h2>
+          <ul class="mt-7 space-y-4 text-slate-300">
+            <li>• 새 텍스트 파일을 만들고 이름을 정확히 <code class="text-sun">index.html</code>로 저장한다.</li>
+            <li>• 제목과 안내 문장을 작성한다.</li>
+            <li>• 게임마다 <code class="text-sun">&lt;a&gt;</code> 태그를 하나씩 만든다.</li>
+            <li>• <code class="text-sun">target=&quot;_blank&quot;</code>로 새 탭에서 열 수 있다.</li>
+            <li>• 브라우저에서 index.html을 열어 두 링크를 시험한다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 완성 코드</div>
+          <div class="overflow-hidden rounded-2xl border border-line bg-[#010409] font-mono text-sm mock-shadow">
+            <div class="border-b border-line bg-panel px-5 py-3 text-slate-400">index.html</div>
+            <pre class="overflow-x-auto p-5 leading-7"><code><span class="text-blue-300">&lt;!DOCTYPE html&gt;</span>
+<span class="text-blue-300">&lt;html</span> <span class="text-green-300">lang=</span><span class="text-yellow-200">&quot;ko&quot;</span><span class="text-blue-300">&gt;</span>
+<span class="text-blue-300">&lt;head&gt;</span>
+  <span class="text-blue-300">&lt;meta</span> <span class="text-green-300">charset=</span><span class="text-yellow-200">&quot;UTF-8&quot;</span><span class="text-blue-300">&gt;</span>
+  <span class="text-blue-300">&lt;title&gt;</span>나의 게임 놀이터<span class="text-blue-300">&lt;/title&gt;</span>
+<span class="text-blue-300">&lt;/head&gt;</span>
+<span class="text-blue-300">&lt;body&gt;</span>
+  <span class="text-blue-300">&lt;h1&gt;</span>🎮 나의 게임 놀이터<span class="text-blue-300">&lt;/h1&gt;</span>
+  <span class="text-blue-300">&lt;p&gt;</span>플레이할 게임을 골라 보세요!<span class="text-blue-300">&lt;/p&gt;</span>
+
+  <span class="text-blue-300">&lt;a</span> <span class="text-green-300">href=</span><span class="text-yellow-200">&quot;./space-game.html&quot;</span><span class="text-blue-300">&gt;</span>🚀 우주선 게임<span class="text-blue-300">&lt;/a&gt;</span>
+  <span class="text-blue-300">&lt;a</span> <span class="text-green-300">href=</span><span class="text-yellow-200">&quot;./jump-game.html&quot;</span><span class="text-blue-300">&gt;</span>🏃 점프 게임<span class="text-blue-300">&lt;/a&gt;</span>
+<span class="text-blue-300">&lt;/body&gt;</span>
+<span class="text-blue-300">&lt;/html&gt;</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. 꾸미기 -->
+    <section class="slide items-center px-6 py-16" data-title="링크를 버튼으로" data-notes="기능이 먼저, 꾸미기는 다음이라는 순서를 강조합니다. 기존 게임 파일은 고치지 않고 index.html에만 스타일을 넣어도 됩니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+        <div>
+          <p class="mb-3 font-bold text-github">LEVEL UP</p>
+          <h2 class="text-4xl font-black sm:text-5xl">링크를 게임 버튼처럼 꾸미기</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 먼저 링크 이동이 되는지 확인한 뒤 CSS를 추가한다.</li>
+            <li>• <code class="text-sun">display: inline-block</code>으로 버튼 영역을 만든다.</li>
+            <li>• padding, background, color로 모양을 꾸민다.</li>
+            <li>• 두 게임 링크에 같은 <code class="text-sun">class</code>를 사용한다.</li>
+          </ul>
+          <div class="mt-6 rounded-xl border border-line bg-[#010409] p-4 font-mono text-sm text-slate-300">&lt;a class=&quot;game-button&quot; href=&quot;./space-game.html&quot;&gt;…&lt;/a&gt;</div>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · Before / After</div>
+          <div class="rounded-2xl border border-line bg-panel p-6">
+            <div class="text-sm font-bold text-slate-500">BEFORE</div><div class="mt-3 space-x-4"><a href="#" class="text-blue-300 underline" onclick="return false">우주선 게임</a><a href="#" class="text-blue-300 underline" onclick="return false">점프 게임</a></div>
+            <div class="my-7 h-px bg-line"></div>
+            <div class="text-sm font-bold text-slate-500">AFTER</div><div class="mt-4 grid gap-3 sm:grid-cols-2"><button class="rounded-xl bg-github px-5 py-5 text-left text-lg font-black shadow-lg shadow-blue-950/30">🚀 우주선 게임</button><button class="rounded-xl bg-mint px-5 py-5 text-left text-lg font-black text-[#071a0c] shadow-lg shadow-green-950/30">🏃 점프 게임</button></div>
+          </div>
+          <div class="mt-4 rounded-xl border border-github/40 bg-github/10 p-4 text-sm">AI 프롬프트 예: “중학생 게임 사이트처럼 밝고 큰 카드 버튼으로 꾸며 줘. 링크 경로는 바꾸지 마.”</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. 폴더 확장 -->
+    <section class="slide items-center px-6 py-16" data-title="게임 폴더로 확장" data-notes="기본 실습이 끝난 학생만 도전하게 하세요. 파일을 games 폴더로 옮기면 기존 href도 반드시 함께 바뀌어야 함을 강조합니다.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-github">LEVEL UP</p>
+        <h2 class="text-4xl font-black sm:text-5xl">게임이 많아지면 폴더로 정리</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 md:grid-cols-2">
+          <li class="rounded-lg bg-panel p-4">• <code class="text-sun">games</code> 폴더를 만들고 게임 파일을 옮긴다.</li>
+          <li class="rounded-lg bg-panel p-4">• index.html은 저장소 맨 위에 그대로 둔다.</li>
+          <li class="rounded-lg bg-panel p-4">• 링크 경로에 폴더 이름을 포함한다.</li>
+          <li class="rounded-lg bg-panel p-4">• 파일을 옮긴 뒤 모든 링크를 다시 시험한다.</li>
+        </ul>
+        <div class="mt-8 grid gap-6 lg:grid-cols-2">
+          <div>
+            <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 왼쪽 · 확장 폴더 구조</div>
+            <div class="rounded-2xl border border-line bg-[#010409] p-6 font-mono"><div>📁 my-game-arcade</div><div class="mt-3 pl-5 text-yellow-200">├─ index.html</div><div class="mt-3 pl-5">└─ 📁 games</div><div class="mt-2 pl-10 text-blue-300">├─ space-game.html</div><div class="mt-2 pl-10 text-green-300">└─ jump-game.html</div></div>
+          </div>
+          <div>
+            <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 오른쪽 · 바뀐 상대경로</div>
+            <div class="rounded-2xl border border-line bg-panel p-6"><div class="text-sm text-slate-500">같은 폴더일 때</div><code class="mt-2 block rounded bg-[#010409] p-4 text-slate-400">./space-game.html</code><div class="mt-5 text-sm text-slate-500">games 폴더 안일 때</div><code class="mt-2 block rounded border border-mint/50 bg-mint/10 p-4 text-green-300">./games/space-game.html</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16. 다시 배포 -->
+    <section class="slide items-center px-6 py-16" data-title="업데이트 배포" data-notes="index.html을 추가한 뒤 아직 GitHub에 올라가지 않았다는 점을 학생에게 질문합니다. Desktop의 Changes 숫자가 0이 될 때까지 진행하게 합니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[.85fr_1.15fr]">
+        <div>
+          <p class="mb-3 font-bold text-mint">PUBLISH AGAIN</p>
+          <h2 class="text-4xl font-black sm:text-5xl">수정한 허브를 다시 배포</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• GitHub Desktop에서 <code class="text-sun">index.html</code> 추가를 확인한다.</li>
+            <li>• Summary에 <code class="text-sun">게임 선택 페이지 추가</code>라고 쓴다.</li>
+            <li>• <strong>Commit to main → Push origin</strong> 순서로 올린다.</li>
+            <li>• 배포 완료 후 Pages 주소에서 강력 새로고침한다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 반복 작업 순환도</div>
+          <div class="relative mx-auto aspect-square max-w-md rounded-full border border-line bg-panel p-8">
+            <div class="absolute left-1/2 top-5 -translate-x-1/2 rounded-xl bg-github px-5 py-3 font-black">1. 수정</div>
+            <div class="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl bg-github px-5 py-3 font-black">2. Commit</div>
+            <div class="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-xl bg-mint px-5 py-3 font-black text-[#071a0c]">3. Push</div>
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 rounded-xl bg-mint px-5 py-3 font-black text-[#071a0c]">4. 확인</div>
+            <div class="grid h-full place-items-center text-center"><div><div class="text-6xl">🔁</div><div class="mt-3 font-black">게임은 계속<br />업데이트된다!</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17. 오류 해결 -->
+    <section class="slide items-center px-6 py-16" data-title="오류 해결" data-notes="학생이 오류를 말하면 바로 답을 주기보다 먼저 주소창의 경로와 GitHub 저장소의 실제 파일명을 나란히 비교하게 하세요.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-coral">DEBUG</p>
+        <h2 class="text-4xl font-black sm:text-5xl">안 열릴 때는 여기부터!</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 md:grid-cols-2 lg:grid-cols-5">
+          <li class="rounded-lg bg-panel p-4">• 404: 파일명과 경로의 철자를 비교한다.</li>
+          <li class="rounded-lg bg-panel p-4">• 첫 화면 없음: <code class="text-sun">index.html</code> 위치를 확인한다.</li>
+          <li class="rounded-lg bg-panel p-4">• 예전 화면: Push 여부와 배포 상태를 확인한다.</li>
+          <li class="rounded-lg bg-panel p-4">• 게임만 오류: 개발자 도구 Console을 확인한다.</li>
+          <li class="rounded-lg bg-panel p-4">• 링크 오류: <code class="text-sun">C:\...</code>가 아닌 상대경로를 쓴다.</li>
+        </ul>
+        <div class="mt-8">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 · 오류 진단 흐름도</div>
+          <div class="grid items-center gap-3 text-center md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
+            <div class="rounded-xl border border-coral/50 bg-coral/10 p-5 font-black">문제 발견</div><div class="text-2xl">→</div>
+            <div class="rounded-xl border border-line bg-panel p-5">GitHub에 파일 있음?</div><div class="text-2xl">→</div>
+            <div class="rounded-xl border border-line bg-panel p-5">href와 이름 같음?</div><div class="text-2xl">→</div>
+            <div class="rounded-xl border border-mint/50 bg-mint/10 p-5 font-black text-green-300">Actions 배포 성공?</div>
+          </div>
+          <div class="mt-5 rounded-xl bg-[#010409] p-4 text-center font-mono text-sm"><span class="text-coral">Game.html</span> ≠ <span class="text-mint">game.html</span> · <span class="text-coral">jump game.html</span> ≠ <span class="text-mint">jump-game.html</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18. 미션 -->
+    <section class="slide items-center px-6 py-16" data-title="개인 실습 미션" data-notes="25~35분 실습을 권장합니다. 필수 미션 완료 학생은 도전 미션으로 이동시키고, 교사는 체크포인트 4개를 기준으로 빠르게 피드백합니다.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1fr_.9fr]">
+        <div>
+          <p class="mb-3 font-bold text-mint">YOUR TURN</p>
+          <h2 class="text-4xl font-black sm:text-5xl">개인 실습: 게임 허브 완성</h2>
+          <ul class="mt-8 space-y-4 text-lg text-slate-300">
+            <li>• 필수 1: 게임 HTML 2개 이상을 저장소에 넣기</li>
+            <li>• 필수 2: index.html에서 모든 게임으로 연결하기</li>
+            <li>• 필수 3: GitHub Pages 주소로 실제 접속하기</li>
+            <li>• 필수 4: 친구에게 URL을 보내 링크 테스트 받기</li>
+            <li>• 도전: 썸네일·게임 설명·‘메인으로’ 링크 추가하기</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 완료 체크 카드</div>
+          <div class="rounded-2xl border border-line bg-panel p-6">
+            <h3 class="text-xl font-black">제출 체크</h3>
+            <div class="mt-5 space-y-3">
+              <label class="flex gap-3 rounded-lg bg-[#010409] p-4"><input type="checkbox" class="h-5 w-5 accent-green-500" /><span>Pages URL이 열린다.</span></label>
+              <label class="flex gap-3 rounded-lg bg-[#010409] p-4"><input type="checkbox" class="h-5 w-5 accent-green-500" /><span>메인 화면에 게임이 2개 이상 보인다.</span></label>
+              <label class="flex gap-3 rounded-lg bg-[#010409] p-4"><input type="checkbox" class="h-5 w-5 accent-green-500" /><span>모든 링크가 정확한 게임을 연다.</span></label>
+              <label class="flex gap-3 rounded-lg bg-[#010409] p-4"><input type="checkbox" class="h-5 w-5 accent-green-500" /><span>친구 PC에서도 정상 작동한다.</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19. 퀴즈 -->
+    <section class="slide items-center px-6 py-16" data-title="마무리 퀴즈" data-notes="학생들이 손가락 1~3번으로 답하게 하세요. 정답은 각각 2번, 2번, 1번입니다. 버튼을 누르면 정답과 설명이 나타납니다.">
+      <div class="mx-auto w-full max-w-6xl">
+        <p class="mb-3 font-bold text-github">EXIT QUIZ</p>
+        <h2 class="text-4xl font-black sm:text-5xl">3문제로 확인!</h2>
+        <ul class="mt-6 grid gap-3 text-slate-300 md:grid-cols-3">
+          <li class="rounded-lg bg-panel p-4">• 저장소의 첫 화면 파일명은 무엇일까?</li>
+          <li class="rounded-lg bg-panel p-4">• 파일 수정 후 웹에 반영하는 순서는?</li>
+          <li class="rounded-lg bg-panel p-4">• 같은 폴더의 게임을 연결하는 태그는?</li>
+        </ul>
+        <div class="mt-8">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 · 클릭형 퀴즈 카드</div>
+          <div class="grid gap-4 md:grid-cols-3">
+            <button class="quiz-card rounded-2xl border border-line bg-panel p-6 text-left transition hover:border-github" data-answer="정답: ② index.html"><span class="text-sm text-slate-500">Q1</span><div class="mt-2 font-bold">① main.html<br />② index.html<br />③ start.html</div></button>
+            <button class="quiz-card rounded-2xl border border-line bg-panel p-6 text-left transition hover:border-github" data-answer="정답: ② Commit → Push"><span class="text-sm text-slate-500">Q2</span><div class="mt-2 font-bold">① Push → Commit<br />② Commit → Push<br />③ Save → Delete</div></button>
+            <button class="quiz-card rounded-2xl border border-line bg-panel p-6 text-left transition hover:border-github" data-answer="정답: ① &lt;a href=&quot;...&quot;&gt;"><span class="text-sm text-slate-500">Q3</span><div class="mt-2 font-bold">① &lt;a href=&quot;...&quot;&gt;<br />② &lt;img src=&quot;...&quot;&gt;<br />③ &lt;h1&gt;</div></button>
+          </div>
+          <div id="quizAnswer" class="mt-5 min-h-14 rounded-xl border border-github/50 bg-github/10 p-4 text-center font-black text-blue-200" aria-live="polite">카드를 누르면 정답이 나타납니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20. 정리 -->
+    <section class="slide items-center px-6 py-16" data-title="정리" data-notes="마지막으로 학생 한 명이 네 단계를 자기 말로 설명하게 합니다. 완성한 URL을 학급 게시판에 제출하게 하세요.">
+      <div class="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+        <div>
+          <p class="mb-3 font-bold text-mint">WRAP UP</p>
+          <h2 class="text-4xl font-black sm:text-5xl">오늘의 핵심 한 줄</h2>
+          <div class="mt-8 rounded-2xl border border-mint/50 bg-mint/10 p-7 text-2xl font-black leading-relaxed text-green-200">“<code>index.html</code>은 게임들의 현관이고,<br /><code>&lt;a&gt;</code> 태그는 각 게임으로 가는 문이다.”</div>
+          <ul class="mt-7 space-y-3 text-lg text-slate-300">
+            <li>• 파일을 정리하고 GitHub에 Commit·Push한다.</li>
+            <li>• Pages에서 main / (root)를 배포한다.</li>
+            <li>• index.html에 여러 게임 링크를 만든다.</li>
+            <li>• 수정할 때마다 Commit·Push·확인을 반복한다.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 오른쪽 · 최종 배포 파이프라인</div>
+          <div class="space-y-3">
+            <div class="rounded-xl border border-line bg-panel p-5"><span class="mr-3 text-2xl">📁</span><strong>HTML 게임 2개 이상 준비</strong></div>
+            <div class="text-center text-2xl text-github">↓</div>
+            <div class="rounded-xl border border-github/50 bg-github/10 p-5"><span class="mr-3 text-2xl">☁️</span><strong>GitHub 저장소에 Push</strong></div>
+            <div class="text-center text-2xl text-mint">↓</div>
+            <div class="rounded-xl border border-mint/50 bg-mint/10 p-5"><span class="mr-3 text-2xl">🌍</span><strong>Pages URL로 친구와 플레이</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 21. 출처 -->
+    <section class="slide items-center px-6 py-16" data-title="공식 자료" data-notes="절차가 바뀌거나 더 자세한 설명이 필요할 때 공식 문서를 확인하라고 안내합니다. 링크는 새 탭에서 열립니다.">
+      <div class="mx-auto w-full max-w-5xl">
+        <p class="mb-3 font-bold text-slate-400">OFFICIAL REFERENCES</p>
+        <h2 class="text-4xl font-black sm:text-5xl">더 알아보기</h2>
+        <ul class="mt-8 space-y-4 text-lg text-slate-300">
+          <li>• <a class="text-blue-300 underline underline-offset-4" href="https://desktop.github.com/download/" target="_blank" rel="noopener">GitHub Desktop 공식 다운로드</a></li>
+          <li>• <a class="text-blue-300 underline underline-offset-4" href="https://docs.github.com/desktop/overview/creating-your-first-repository-using-github-desktop" target="_blank" rel="noopener">GitHub Desktop으로 첫 저장소 만들기</a></li>
+          <li>• <a class="text-blue-300 underline underline-offset-4" href="https://docs.github.com/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site" target="_blank" rel="noopener">GitHub Pages 배포 소스 설정</a></li>
+          <li>• <a class="text-blue-300 underline underline-offset-4" href="https://docs.github.com/pages/getting-started-with-github-pages/creating-a-github-pages-site" target="_blank" rel="noopener">GitHub Pages 사이트와 진입 파일</a></li>
+        </ul>
+        <div class="mt-10" aria-label="시각 자료: 공식 문서와 수업 결과 연결">
+          <div class="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">시각 자료 위치: 아래 · 학습 완료 배지</div>
+          <div class="rounded-2xl border border-github/50 bg-gradient-to-r from-github/15 to-mint/15 p-8 text-center"><div class="text-6xl">🏆</div><div class="mt-4 text-2xl font-black">나만의 게임 아케이드 배포 완료!</div><div class="mt-2 text-slate-400">이제 URL 하나로 내가 만든 여러 게임을 공유할 수 있습니다.</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <aside id="notesPanel" class="teacher-notes glass fixed bottom-20 left-1/2 z-40 w-[min(92vw,900px)] -translate-x-1/2 rounded-xl border border-sun/40 p-5 shadow-2xl" aria-live="polite">
+    <div class="mb-2 flex items-center justify-between"><strong class="text-yellow-200">교사용 진행 메모</strong><button id="closeNotes" class="rounded-md border border-line px-3 py-1 text-sm hover:bg-line">닫기</button></div>
+    <p id="notesText" class="text-sm leading-relaxed text-slate-300"></p>
+  </aside>
+
+  <nav id="controls" class="glass fixed bottom-4 left-1/2 z-50 flex w-[min(94vw,760px)] -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-line px-3 py-2 shadow-2xl" aria-label="슬라이드 조작">
+    <button id="prevBtn" class="rounded-xl px-4 py-2 font-bold text-slate-300 hover:bg-line disabled:opacity-30" aria-label="이전 슬라이드">← 이전</button>
+    <div class="flex min-w-0 items-center gap-3">
+      <span id="slideCounter" class="whitespace-nowrap font-mono text-sm text-slate-400">1 / 21</span>
+      <span id="slideTitle" class="hidden truncate text-sm font-bold text-slate-300 sm:block">표지</span>
+    </div>
+    <div class="flex items-center gap-1">
+      <button id="notesBtn" class="rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-line hover:text-white" title="교사용 메모 (N)">메모</button>
+      <button id="fullscreenBtn" class="rounded-lg px-3 py-2 text-sm text-slate-400 hover:bg-line hover:text-white" title="전체 화면 (F)">전체화면</button>
+      <button id="nextBtn" class="rounded-xl bg-github px-4 py-2 font-bold text-white hover:bg-blue-500 disabled:opacity-30" aria-label="다음 슬라이드">다음 →</button>
+    </div>
+  </nav>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const counter = document.getElementById('slideCounter');
+    const title = document.getElementById('slideTitle');
+    const progressBar = document.getElementById('progressBar');
+    const notesPanel = document.getElementById('notesPanel');
+    const notesText = document.getElementById('notesText');
+    let current = 0;
+
+    function showSlide(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === current);
+        slide.setAttribute('aria-hidden', i === current ? 'false' : 'true');
+      });
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      title.textContent = slides[current].dataset.title || '';
+      progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === slides.length - 1;
+      notesText.textContent = slides[current].dataset.notes || '이 슬라이드에는 별도 메모가 없습니다.';
+      document.title = `${current + 1}. ${slides[current].dataset.title} | GitHub Pages 수업`;
+    }
+
+    function toggleNotes(force) {
+      const shouldOpen = typeof force === 'boolean' ? force : !notesPanel.classList.contains('open');
+      notesPanel.classList.toggle('open', shouldOpen);
+    }
+
+    prevBtn.addEventListener('click', () => showSlide(current - 1));
+    nextBtn.addEventListener('click', () => showSlide(current + 1));
+    document.getElementById('notesBtn').addEventListener('click', () => toggleNotes());
+    document.getElementById('closeNotes').addEventListener('click', () => toggleNotes(false));
+    document.getElementById('fullscreenBtn').addEventListener('click', async () => {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (['INPUT', 'BUTTON', 'A'].includes(event.target.tagName)) return;
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); showSlide(current + 1); }
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); showSlide(current - 1); }
+      if (event.key === 'Home') showSlide(0);
+      if (event.key === 'End') showSlide(slides.length - 1);
+      if (event.key.toLowerCase() === 'n') toggleNotes();
+      if (event.key.toLowerCase() === 'f') document.getElementById('fullscreenBtn').click();
+      if (event.key === 'Escape') toggleNotes(false);
+    });
+
+    document.querySelectorAll('.quiz-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        document.getElementById('quizAnswer').textContent = card.dataset.answer;
+        document.querySelectorAll('.quiz-card').forEach((item) => item.classList.remove('border-github', 'bg-github/10'));
+        card.classList.add('border-github', 'bg-github/10');
+      });
+    });
+
+    let touchStartX = 0;
+    document.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].screenX; }, { passive: true });
+    document.addEventListener('touchend', (event) => {
+      const distance = event.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(distance) > 70) showSlide(current + (distance < 0 ? 1 : -1));
+    }, { passive: true });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
