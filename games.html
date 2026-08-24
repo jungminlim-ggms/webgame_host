@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="코딩으로 보는 세상 게임 목록" />
+  <title>게임 | 코딩으로 보는 세상</title>
+  <style>
+    :root { color-scheme:dark; --bg:#07111f; --panel:#111f34; --line:#2a3b54; --text:#f8fafc; --muted:#a9b7ca; --mint:#52e5b1; --pink:#ff6f91; --focus:#fde68a; }
+    * { box-sizing:border-box; }
+    body { min-height:100vh; margin:0; color:var(--text); font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif; background:radial-gradient(circle at 18% 0,rgba(82,229,177,.17),transparent 29rem),var(--bg); }
+    body::before { content:""; position:fixed; inset:0; z-index:-1; opacity:.32; background-image:radial-gradient(rgba(148,163,184,.3) 1px,transparent 1px); background-size:25px 25px; }
+    .page { width:min(980px,calc(100% - 36px)); margin:0 auto; padding:34px 0 60px; }
+    nav { display:flex; align-items:center; justify-content:space-between; gap:18px; }
+    .brand { color:var(--text); font-weight:850; text-decoration:none; }
+    .home { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:12px; background:rgba(17,31,52,.7); }
+    .home:hover { color:var(--text); border-color:var(--mint); }
+    a:focus-visible { outline:3px solid var(--focus); outline-offset:4px; }
+    header { padding:86px 0 40px; }
+    .eyebrow { margin:0 0 12px; color:var(--mint); font-size:.84rem; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(2.5rem,7vw,4.7rem); letter-spacing:-.055em; }
+    .intro { max-width:650px; margin:18px 0 0; color:var(--muted); font-size:1.08rem; line-height:1.7; }
+    .count { display:inline-block; margin-top:24px; padding:8px 12px; color:#c9ffec; font-size:.86rem; font-weight:800; border:1px solid rgba(82,229,177,.35); border-radius:999px; background:rgba(82,229,177,.1); }
+    .list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin-top:18px; }
+    .item { display:flex; min-height:280px; flex-direction:column; justify-content:space-between; padding:26px; color:var(--text); text-decoration:none; border:1px solid var(--line); border-radius:22px; background:rgba(17,31,52,.84); box-shadow:0 18px 48px rgba(0,0,0,.2); transition:transform .16s ease,border-color .16s ease; }
+    .item:hover { transform:translateY(-5px); border-color:var(--accent); }
+    .tetris { --accent:var(--pink); }
+    .snake { --accent:var(--mint); }
+    .icon { display:grid; width:62px; height:62px; place-items:center; border:1px solid color-mix(in srgb,var(--accent) 48%,transparent); border-radius:18px; background:color-mix(in srgb,var(--accent) 11%,transparent); font-size:1.9rem; }
+    .item h2 { margin:38px 0 0; font-size:1.45rem; letter-spacing:-.03em; }
+    .item p { margin:9px 0 0; color:var(--muted); line-height:1.58; }
+    .open { display:inline-block; margin-top:22px; color:var(--accent); font-weight:850; }
+    footer { margin-top:70px; padding-top:22px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); }
+    @media (max-width:680px) { header{padding-top:60px}.list{grid-template-columns:1fr}.item{min-height:245px} }
+    @media (prefers-reduced-motion:reduce) { .item{transition:none} }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav aria-label="사이트 탐색">
+      <a class="brand" href="./index.html">&lt;/&gt; 코딩으로 보는 세상</a>
+      <a class="home" href="./index.html">← 메인으로</a>
+    </nav>
+
+    <main>
+      <header>
+        <p class="eyebrow">Web Games</p>
+        <h1>게임</h1>
+        <p class="intro">실행할 게임을 선택하세요. 모든 게임은 하나의 HTML 파일 안에 HTML, CSS, JavaScript로 만들어졌습니다.</p>
+        <span class="count">현재 게임 2개</span>
+      </header>
+
+      <section class="list" aria-label="게임 목록">
+        <a class="item tetris" href="./tetris.html">
+          <span class="icon" aria-hidden="true">🧱</span>
+          <span>
+            <h2>2인용 경쟁 테트리스</h2>
+            <p>두 명이 한 화면에서 대결하는 실시간 블록 퍼즐 게임</p>
+            <span class="open">게임 시작 →</span>
+          </span>
+        </a>
+
+        <a class="item snake" href="./snake.html">
+          <span class="icon" aria-hidden="true">🐍</span>
+          <span>
+            <h2>2인용 스네이크</h2>
+            <p>사과와 독사과를 피해 더 긴 뱀으로 성장하는 대결 게임</p>
+            <span class="open">게임 시작 →</span>
+          </span>
+        </a>
+      </section>
+    </main>
+
+    <footer>코딩으로 보는 세상 · 웹 게임 보관함</footer>
+  </div>
+</body>
+</html>

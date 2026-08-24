@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="코딩으로 보는 세상 수업 자료 목록" />
+  <title>수업 자료 | 코딩으로 보는 세상</title>
+  <style>
+    :root { color-scheme: dark; --bg:#07111f; --panel:#111f34; --line:#2a3b54; --text:#f8fafc; --muted:#a9b7ca; --blue:#59a8ff; --focus:#fde68a; }
+    * { box-sizing: border-box; }
+    body { min-height:100vh; margin:0; color:var(--text); font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif; background:radial-gradient(circle at 80% 0,rgba(89,168,255,.18),transparent 30rem),var(--bg); }
+    body::before { content:""; position:fixed; inset:0; z-index:-1; opacity:.32; background-image:radial-gradient(rgba(148,163,184,.3) 1px,transparent 1px); background-size:25px 25px; }
+    .page { width:min(980px,calc(100% - 36px)); margin:0 auto; padding:34px 0 60px; }
+    nav { display:flex; align-items:center; justify-content:space-between; gap:18px; }
+    .brand { color:var(--text); font-weight:850; text-decoration:none; }
+    .home { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:12px; background:rgba(17,31,52,.7); }
+    .home:hover { color:var(--text); border-color:var(--blue); }
+    a:focus-visible { outline:3px solid var(--focus); outline-offset:4px; }
+    header { padding:86px 0 40px; }
+    .eyebrow { margin:0 0 12px; color:var(--blue); font-size:.84rem; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(2.5rem,7vw,4.7rem); letter-spacing:-.055em; }
+    .intro { max-width:650px; margin:18px 0 0; color:var(--muted); font-size:1.08rem; line-height:1.7; }
+    .count { display:inline-block; margin-top:24px; padding:8px 12px; color:#cfe7ff; font-size:.86rem; font-weight:800; border:1px solid rgba(89,168,255,.35); border-radius:999px; background:rgba(89,168,255,.1); }
+    .list { display:grid; gap:16px; margin-top:18px; }
+    .item { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:22px; padding:24px; color:var(--text); text-decoration:none; border:1px solid var(--line); border-radius:20px; background:rgba(17,31,52,.84); box-shadow:0 18px 48px rgba(0,0,0,.2); transition:transform .16s ease,border-color .16s ease; }
+    .item:hover { transform:translateY(-4px); border-color:var(--blue); }
+    .icon { display:grid; width:58px; height:58px; place-items:center; border-radius:17px; background:rgba(89,168,255,.12); font-size:1.7rem; }
+    .item h2 { margin:0; font-size:1.25rem; letter-spacing:-.025em; }
+    .item p { margin:7px 0 0; color:var(--muted); line-height:1.55; }
+    .open { color:var(--blue); font-weight:850; white-space:nowrap; }
+    footer { margin-top:70px; padding-top:22px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); }
+    @media (max-width:620px) { header{padding-top:60px}.item{grid-template-columns:auto 1fr}.open{grid-column:2}.item p{font-size:.94rem} }
+    @media (prefers-reduced-motion:reduce) { .item{transition:none} }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav aria-label="사이트 탐색">
+      <a class="brand" href="./index.html">&lt;/&gt; 코딩으로 보는 세상</a>
+      <a class="home" href="./index.html">← 메인으로</a>
+    </nav>
+
+    <main>
+      <header>
+        <p class="eyebrow">Class Materials</p>
+        <h1>수업 자료</h1>
+        <p class="intro">학습할 자료를 선택하세요. 새로운 수업 자료가 저장소에 추가되면 이 목록에서 연결할 수 있습니다.</p>
+        <span class="count">현재 자료 1개</span>
+      </header>
+
+      <section class="list" aria-label="수업 자료 목록">
+        <a class="item" href="./webgame_deployment.html">
+          <span class="icon" aria-hidden="true">🌐</span>
+          <span>
+            <h2>GitHub Pages로 나만의 게임 배포하기</h2>
+            <p>GitHub Desktop, GitHub Pages, index.html과 하이퍼링크를 배우는 수업 슬라이드</p>
+          </span>
+          <span class="open">자료 열기 →</span>
+        </a>
+      </section>
+    </main>
+
+    <footer>코딩으로 보는 세상 · 수업 자료 보관함</footer>
+  </div>
+</body>
+</html>

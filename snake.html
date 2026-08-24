@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>2인용 스네이크 게임</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #2c3e50;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            margin-top: 20px;
+        }
+        canvas {
+            background-color: #34495e;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 2px solid #ecf0f1;
+        }
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            width: 600px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .p1-score { color: #2ecc71; }
+        .p2-score { color: #3498db; }
+        .info {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            color: #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scoreboard">
+        <div class="p1-score">P1 (초록/WASD) 길이: <span id="score1">3</span></div>
+        <div class="p2-score">P2 (파랑/방향키) 길이: <span id="score2">3</span></div>
+    </div>
+
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+
+    <div class="info">
+        빨간 사과: 길이 증가 | <b>보라색 독사과: 길이 감소</b><br>
+        서로 부딪히면 랜덤으로 한 명의 길이가 줄어듭니다!<br>
+        (벽에 부딪히거나 자기 몸에 부딪혀도, 길이가 0이 되어도 패배합니다)
+    </div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const gridSize = 20;
+    const tileCount = canvas.width / gridSize;
+
+    let gameInterval;
+    let collisionCooldown = 0;
+
+    // 플레이어 1 (초록색 - WASD)
+    let snake1 = {
+        body: [{x: 5, y: 15}, {x: 4, y: 15}, {x: 3, y: 15}],
+        dx: 1, dy: 0,
+        nextDx: 1, nextDy: 0,
+        color: '#2ecc71'
+    };
+
+    // 플레이어 2 (파란색 - 방향키)
+    let snake2 = {
+        body: [{x: 24, y: 15}, {x: 25, y: 15}, {x: 26, y: 15}],
+        dx: -1, dy: 0,
+        nextDx: -1, nextDy: 0,
+        color: '#3498db'
+    };
+
+    let food = { x: 15, y: 5 };
+    let poison = { x: 15, y: 25 }; // 독사과
+
+    // 키보드 입력 처리
+    document.addEventListener("keydown", (e) => {
+        // 방향키 스크롤 방지
+        if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].indexOf(e.key) > -1) {
+            e.preventDefault();
+        }
+
+        // P1 (WASD)
+        if (e.key === 'w' && snake1.dy === 0) { snake1.nextDx = 0; snake1.nextDy = -1; }
+        if (e.key === 's' && snake1.dy === 0) { snake1.nextDx = 0; snake1.nextDy = 1; }
+        if (e.key === 'a' && snake1.dx === 0) { snake1.nextDx = -1; snake1.nextDy = 0; }
+        if (e.key === 'd' && snake1.dx === 0) { snake1.nextDx = 1; snake1.nextDy = 0; }
+
+        // P2 (방향키)
+        if (e.key === 'ArrowUp' && snake2.dy === 0) { snake2.nextDx = 0; snake2.nextDy = -1; }
+        if (e.key === 'ArrowDown' && snake2.dy === 0) { snake2.nextDx = 0; snake2.nextDy = 1; }
+        if (e.key === 'ArrowLeft' && snake2.dx === 0) { snake2.nextDx = -1; snake2.nextDy = 0; }
+        if (e.key === 'ArrowRight' && snake2.dx === 0) { snake2.nextDx = 1; snake2.nextDy = 0; }
+    });
+
+    // 랜덤 좌표 생성
+    function getRandomPos() {
+        return Math.floor(Math.random() * tileCount);
+    }
+
+    function spawnItem(item) {
+        item.x = getRandomPos();
+        item.y = getRandomPos();
+        // 뱀 위에 생성되지 않도록 검사하는 로직은 편의상 생략 (필요시 추가)
+    }
+
+    // 뱀 길이 감소 로직
+    function shrinkSnake(snake, playerNum) {
+        snake.body.pop();
+        if (snake.body.length === 0) {
+            gameOver(`플레이어 ${playerNum}의 길이가 0이 되어 소멸했습니다!`);
+        }
+    }
+
+    // 게임 루프
+    function drawGame() {
+        // 이동 방향 업데이트
+        snake1.dx = snake1.nextDx; snake1.dy = snake1.nextDy;
+        snake2.dx = snake2.nextDx; snake2.dy = snake2.nextDy;
+
+        // 쿨다운 감소
+        if(collisionCooldown > 0) collisionCooldown--;
+
+        moveSnake(snake1);
+        moveSnake(snake2);
+
+        checkWallCollision(snake1, 1);
+        checkWallCollision(snake2, 2);
+
+        checkSelfCollision(snake1, 1);
+        checkSelfCollision(snake2, 2);
+
+        checkItemCollision(snake1, 1);
+        checkItemCollision(snake2, 2);
+
+        checkPlayerCollision();
+
+        // 화면 지우기
+        ctx.fillStyle = "#34495e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 그리기
+        drawItem(food, "#e74c3c"); // 빨간색 사과
+        drawItem(poison, "#9b59b6"); // 보라색 독사과
+        drawSnake(snake1);
+        drawSnake(snake2);
+
+        // 점수(길이) 업데이트
+        document.getElementById("score1").innerText = snake1.body.length;
+        document.getElementById("score2").innerText = snake2.body.length;
+    }
+
+    function moveSnake(snake) {
+        const head = { x: snake.body[0].x + snake.dx, y: snake.body[0].y + snake.dy };
+        snake.body.unshift(head); // 머리 추가
+        snake.body.pop(); // 꼬리 제거 (먹이를 안 먹었을 때 기본 이동)
+    }
+
+    function drawSnake(snake) {
+        ctx.fillStyle = snake.color;
+        for (let i = 0; i < snake.body.length; i++) {
+            ctx.fillRect(snake.body[i].x * gridSize, snake.body[i].y * gridSize, gridSize - 2, gridSize - 2);
+        }
+    }
+
+    function drawItem(item, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(item.x * gridSize + gridSize/2, item.y * gridSize + gridSize/2, gridSize/2 - 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function checkItemCollision(snake, playerNum) {
+        const head = snake.body[0];
+
+        // 일반 사과 먹었을 때 (길이 증가)
+        if (head.x === food.x && head.y === food.y) {
+            snake.body.push({...snake.body[snake.body.length - 1]}); // 꼬리 복제하여 추가
+            spawnItem(food);
+        }
+
+        // 독사과 먹었을 때 (길이 감소)
+        if (head.x === poison.x && head.y === poison.y) {
+            shrinkSnake(snake, playerNum);
+            spawnItem(poison);
+        }
+    }
+
+    // 플레이어 간의 충돌 감지 (랜덤 패널티)
+    function checkPlayerCollision() {
+        if (collisionCooldown > 0) return; // 쿨다운 중이면 무시
+
+        let collided = false;
+        const head1 = snake1.body[0];
+        const head2 = snake2.body[0];
+
+        // P1이 P2와 부딪혔는지 검사
+        for (let part of snake2.body) {
+            if (head1.x === part.x && head1.y === part.y) collided = true;
+        }
+        // P2가 P1과 부딪혔는지 검사
+        for (let part of snake1.body) {
+            if (head2.x === part.x && head2.y === part.y) collided = true;
+        }
+
+        if (collided) {
+            // 랜덤으로 한 명의 길이 감소
+            if (Math.random() < 0.5) {
+                shrinkSnake(snake1, 1);
+            } else {
+                shrinkSnake(snake2, 2);
+            }
+            collisionCooldown = 5; // 0.5초(5프레임) 동안 충돌 패널티 면제
+        }
+    }
+
+    function checkWallCollision(snake, playerNum) {
+        const head = snake.body[0];
+        if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+            gameOver(`플레이어 ${playerNum}이(가) 벽에 부딪혔습니다!`);
+        }
+    }
+
+    function checkSelfCollision(snake, playerNum) {
+        const head = snake.body[0];
+        for (let i = 1; i < snake.body.length; i++) {
+            if (head.x === snake.body[i].x && head.y === snake.body[i].y) {
+                gameOver(`플레이어 ${playerNum}이(가) 자기 몸에 부딪혔습니다!`);
+            }
+        }
+    }
+
+    function gameOver(message) {
+        clearInterval(gameInterval);
+        setTimeout(() => {
+            alert(message + "\n새로고침(F5)을 눌러 다시 시작하세요.");
+        }, 10);
+    }
+
+    // 게임 시작 (1초에 10번 업데이트)
+    gameInterval = setInterval(drawGame, 100);
+
+</script>
+</body>
+</html>
