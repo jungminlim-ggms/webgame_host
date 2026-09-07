@@ -2,21 +2,24 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2인용 스네이크 게임</title>
     <style>
         body {
+            background-color: #2c3e50;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #2c3e50;
-            color: white;
-            font-family: 'Arial', sans-serif;
-            margin-top: 20px;
+            margin: 0;
+            padding: 20px;
         }
         canvas {
-            background-color: #34495e;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            border: 2px solid #ecf0f1;
+            background-color: #000;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            border: 4px solid #34495e;
+            border-radius: 5px;
         }
         .scoreboard {
             display: flex;
@@ -26,226 +29,274 @@
             font-size: 20px;
             font-weight: bold;
         }
-        .p1-score { color: #2ecc71; }
-        .p2-score { color: #3498db; }
-        .info {
+        .player1 { color: #3498db; } /* 파란색 */
+        .player2 { color: #2ecc71; } /* 초록색 */
+        .legend {
             margin-top: 15px;
+            background: #34495e;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-size: 14px;
-            text-align: center;
-            color: #bdc3c7;
         }
+        .legend span { display: inline-block; margin-right: 15px; }
+        .box { display: inline-block; width: 12px; height: 12px; margin-right: 5px; vertical-align: middle;}
     </style>
 </head>
 <body>
 
     <div class="scoreboard">
-        <div class="p1-score">P1 (초록/WASD) 길이: <span id="score1">3</span></div>
-        <div class="p2-score">P2 (파랑/방향키) 길이: <span id="score2">3</span></div>
+        <div class="player1">Player 1 (WASD) 길이: <span id="score1">1</span></div>
+        <div class="player2">Player 2 (방향키) 길이: <span id="score2">1</span></div>
     </div>
 
     <canvas id="gameCanvas" width="600" height="600"></canvas>
 
-    <div class="info">
-        빨간 사과: 길이 증가 | <b>보라색 독사과: 길이 감소</b><br>
-        서로 부딪히면 랜덤으로 한 명의 길이가 줄어듭니다!<br>
-        (벽에 부딪히거나 자기 몸에 부딪혀도, 길이가 0이 되어도 패배합니다)
+    <div class="legend">
+        <span><div class="box" style="background: #e74c3c;"></div>일반 사과 (길이 증가)</span>
+        <span><div class="box" style="background: #9b59b6;"></div>독사과 (길이 감소)</span>
+        <span><div class="box" style="background: #f1c40f;"></div>황금 사과 (5초간 속도 증가)</span>
     </div>
 
 <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-    const gridSize = 20;
-    const tileCount = canvas.width / gridSize;
+const gridSize = 20;
+const tileCount = canvas.width / gridSize;
 
-    let gameInterval;
-    let collisionCooldown = 0;
+// 플레이어 클래스
+class Snake {
+    constructor(x, y, color, controls) {
+        this.body = [{x, y}];
+        this.dx = 0;
+        this.dy = 0;
+        this.nextDx = 0;
+        this.nextDy = 0;
+        this.color = color;
+        this.controls = controls;
+        
+        // 속도 관련
+        this.baseSpeed = 120; // 기본 이동 간격(ms)
+        this.currentSpeed = this.baseSpeed;
+        this.lastMoveTime = 0;
+        this.speedBoostEndTime = 0;
 
-    // 플레이어 1 (초록색 - WASD)
-    let snake1 = {
-        body: [{x: 5, y: 15}, {x: 4, y: 15}, {x: 3, y: 15}],
-        dx: 1, dy: 0,
-        nextDx: 1, nextDy: 0,
-        color: '#2ecc71'
-    };
+        // 충돌 무적 시간 (연속 충돌 방지)
+        this.invincibleUntil = 0;
+    }
 
-    // 플레이어 2 (파란색 - 방향키)
-    let snake2 = {
-        body: [{x: 24, y: 15}, {x: 25, y: 15}, {x: 26, y: 15}],
-        dx: -1, dy: 0,
-        nextDx: -1, nextDy: 0,
-        color: '#3498db'
-    };
+    move() {
+        this.dx = this.nextDx;
+        this.dy = this.nextDy;
 
-    let food = { x: 15, y: 5 };
-    let poison = { x: 15, y: 25 }; // 독사과
+        // 이동하지 않고 가만히 있는 상태
+        if (this.dx === 0 && this.dy === 0) return;
 
-    // 키보드 입력 처리
-    document.addEventListener("keydown", (e) => {
-        // 방향키 스크롤 방지
-        if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].indexOf(e.key) > -1) {
-            e.preventDefault();
+        let head = {x: this.body[0].x + this.dx, y: this.body[0].y + this.dy};
+
+        // 벽 통과 (반대편으로 나옴)
+        if (head.x < 0) head.x = tileCount - 1;
+        if (head.x >= tileCount) head.x = 0;
+        if (head.y < 0) head.y = tileCount - 1;
+        if (head.y >= tileCount) head.y = 0;
+
+        this.body.unshift(head); // 머리 추가
+        this.body.pop(); // 꼬리 자르기 (아이템을 먹었을 때만 안 자름)
+    }
+
+    grow() {
+        let tail = this.body[this.body.length - 1];
+        this.body.push({x: tail.x, y: tail.y});
+    }
+
+    shrink() {
+        if (this.body.length > 1) {
+            this.body.pop();
         }
+    }
 
-        // P1 (WASD)
-        if (e.key === 'w' && snake1.dy === 0) { snake1.nextDx = 0; snake1.nextDy = -1; }
-        if (e.key === 's' && snake1.dy === 0) { snake1.nextDx = 0; snake1.nextDy = 1; }
-        if (e.key === 'a' && snake1.dx === 0) { snake1.nextDx = -1; snake1.nextDy = 0; }
-        if (e.key === 'd' && snake1.dx === 0) { snake1.nextDx = 1; snake1.nextDy = 0; }
+    speedUp(now) {
+        this.currentSpeed = this.baseSpeed / 2; // 2배 빨라짐
+        this.speedBoostEndTime = now + 5000; // 5초간 유지
+    }
 
-        // P2 (방향키)
-        if (e.key === 'ArrowUp' && snake2.dy === 0) { snake2.nextDx = 0; snake2.nextDy = -1; }
-        if (e.key === 'ArrowDown' && snake2.dy === 0) { snake2.nextDx = 0; snake2.nextDy = 1; }
-        if (e.key === 'ArrowLeft' && snake2.dx === 0) { snake2.nextDx = -1; snake2.nextDy = 0; }
-        if (e.key === 'ArrowRight' && snake2.dx === 0) { snake2.nextDx = 1; snake2.nextDy = 0; }
+    updateSpeed(now) {
+        if (now > this.speedBoostEndTime) {
+            this.currentSpeed = this.baseSpeed;
+        }
+    }
+}
+
+// 플레이어 1 (파란색, WASD)
+const p1 = new Snake(5, 15, '#3498db', {up: 'KeyW', down: 'KeyS', left: 'KeyA', right: 'KeyD'});
+// 플레이어 2 (초록색, 방향키)
+const p2 = new Snake(24, 15, '#2ecc71', {up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight'});
+
+let items = [];
+const MAX_ITEMS = 4;
+
+// 키보드 입력 처리
+window.addEventListener('keydown', e => {
+    // Player 1 (WASD)
+    if (e.code === p1.controls.up && p1.dy === 0) { p1.nextDx = 0; p1.nextDy = -1; }
+    if (e.code === p1.controls.down && p1.dy === 0) { p1.nextDx = 0; p1.nextDy = 1; }
+    if (e.code === p1.controls.left && p1.dx === 0) { p1.nextDx = -1; p1.nextDy = 0; }
+    if (e.code === p1.controls.right && p1.dx === 0) { p1.nextDx = 1; p1.nextDy = 0; }
+
+    // Player 2 (방향키)
+    if (e.code === p2.controls.up && p2.dy === 0) { p2.nextDx = 0; p2.nextDy = -1; }
+    if (e.code === p2.controls.down && p2.dy === 0) { p2.nextDx = 0; p2.nextDy = 1; }
+    if (e.code === p2.controls.left && p2.dx === 0) { p2.nextDx = -1; p2.nextDy = 0; }
+    if (e.code === p2.controls.right && p2.dx === 0) { p2.nextDx = 1; p2.nextDy = 0; }
+
+    // 방향키 스크롤 방지
+    if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.code) > -1) {
+        e.preventDefault();
+    }
+});
+
+// 아이템 스폰
+function spawnItem() {
+    let x, y, occupied;
+    do {
+        x = Math.floor(Math.random() * tileCount);
+        y = Math.floor(Math.random() * tileCount);
+        occupied = p1.body.some(s => s.x === x && s.y === y) ||
+                   p2.body.some(s => s.x === x && s.y === y) ||
+                   items.some(i => i.x === x && i.y === y);
+    } while (occupied);
+
+    let rand = Math.random();
+    let type = 'NORMAL';
+    let color = '#e74c3c'; // 빨간색
+    
+    if (rand > 0.8) {
+        type = 'POISON';
+        color = '#9b59b6'; // 보라색
+    } else if (rand > 0.6) {
+        type = 'GOLDEN';
+        color = '#f1c40f'; // 노란색
+    }
+
+    items.push({x, y, type, color});
+}
+
+// 아이템 먹기 확인
+function checkItems(snake, now) {
+    for (let i = 0; i < items.length; i++) {
+        if (snake.body[0].x === items[i].x && snake.body[0].y === items[i].y) {
+            let item = items[i];
+            items.splice(i, 1); 
+            
+            if (item.type === 'NORMAL') {
+                snake.grow();
+            } else if (item.type === 'POISON') {
+                snake.shrink();
+            } else if (item.type === 'GOLDEN') {
+                snake.speedUp(now);
+            }
+            spawnItem();
+            break;
+        }
+    }
+}
+
+// 플레이어 간 충돌 확인
+function checkPlayerCollision(now) {
+    if (now < p1.invincibleUntil || now < p2.invincibleUntil) return; 
+
+    let collided = false;
+
+    for (let segment of p2.body) {
+        if (p1.body[0].x === segment.x && p1.body[0].y === segment.y) collided = true;
+    }
+    for (let segment of p1.body) {
+        if (p2.body[0].x === segment.x && p2.body[0].y === segment.y) collided = true;
+    }
+
+    if (collided) {
+        let loser = Math.random() < 0.5 ? p1 : p2;
+        loser.shrink();
+
+        p1.invincibleUntil = now + 1000;
+        p2.invincibleUntil = now + 1000;
+    }
+}
+
+// 자기 자신과 충돌 확인
+function checkSelfCollision(snake) {
+    for (let i = 1; i < snake.body.length; i++) {
+        if (snake.body[0].x === snake.body[i].x && snake.body[0].y === snake.body[i].y) {
+            snake.body = [snake.body[0]]; 
+            break;
+        }
+    }
+}
+
+// 메인 게임 루프
+function gameLoop(timestamp) {
+    requestAnimationFrame(gameLoop);
+
+    p1.updateSpeed(timestamp);
+    if (timestamp - p1.lastMoveTime > p1.currentSpeed) {
+        p1.move();
+        checkItems(p1, timestamp);
+        checkSelfCollision(p1);
+        p1.lastMoveTime = timestamp;
+    }
+
+    p2.updateSpeed(timestamp);
+    if (timestamp - p2.lastMoveTime > p2.currentSpeed) {
+        p2.move();
+        checkItems(p2, timestamp);
+        checkSelfCollision(p2);
+        p2.lastMoveTime = timestamp;
+    }
+
+    checkPlayerCollision(timestamp);
+    draw(timestamp);
+}
+
+// 화면 그리기
+function draw(now) {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    items.forEach(item => {
+        ctx.fillStyle = item.color;
+        if(item.type === 'GOLDEN' && Math.floor(now / 200) % 2 === 0) {
+            ctx.fillStyle = '#fff'; 
+        }
+        ctx.beginPath();
+        ctx.arc(item.x * gridSize + gridSize/2, item.y * gridSize + gridSize/2, gridSize/2.2, 0, Math.PI * 2);
+        ctx.fill();
     });
 
-    // 랜덤 좌표 생성
-    function getRandomPos() {
-        return Math.floor(Math.random() * tileCount);
-    }
-
-    function spawnItem(item) {
-        item.x = getRandomPos();
-        item.y = getRandomPos();
-        // 뱀 위에 생성되지 않도록 검사하는 로직은 편의상 생략 (필요시 추가)
-    }
-
-    // 뱀 길이 감소 로직
-    function shrinkSnake(snake, playerNum) {
-        snake.body.pop();
-        if (snake.body.length === 0) {
-            gameOver(`플레이어 ${playerNum}의 길이가 0이 되어 소멸했습니다!`);
-        }
-    }
-
-    // 게임 루프
-    function drawGame() {
-        // 이동 방향 업데이트
-        snake1.dx = snake1.nextDx; snake1.dy = snake1.nextDy;
-        snake2.dx = snake2.nextDx; snake2.dy = snake2.nextDy;
-
-        // 쿨다운 감소
-        if(collisionCooldown > 0) collisionCooldown--;
-
-        moveSnake(snake1);
-        moveSnake(snake2);
-
-        checkWallCollision(snake1, 1);
-        checkWallCollision(snake2, 2);
-
-        checkSelfCollision(snake1, 1);
-        checkSelfCollision(snake2, 2);
-
-        checkItemCollision(snake1, 1);
-        checkItemCollision(snake2, 2);
-
-        checkPlayerCollision();
-
-        // 화면 지우기
-        ctx.fillStyle = "#34495e";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 그리기
-        drawItem(food, "#e74c3c"); // 빨간색 사과
-        drawItem(poison, "#9b59b6"); // 보라색 독사과
-        drawSnake(snake1);
-        drawSnake(snake2);
-
-        // 점수(길이) 업데이트
-        document.getElementById("score1").innerText = snake1.body.length;
-        document.getElementById("score2").innerText = snake2.body.length;
-    }
-
-    function moveSnake(snake) {
-        const head = { x: snake.body[0].x + snake.dx, y: snake.body[0].y + snake.dy };
-        snake.body.unshift(head); // 머리 추가
-        snake.body.pop(); // 꼬리 제거 (먹이를 안 먹었을 때 기본 이동)
-    }
-
+    // 뱀 그리기 부분 수정됨
     function drawSnake(snake) {
-        ctx.fillStyle = snake.color;
-        for (let i = 0; i < snake.body.length; i++) {
-            ctx.fillRect(snake.body[i].x * gridSize, snake.body[i].y * gridSize, gridSize - 2, gridSize - 2);
-        }
-    }
+        if (now < snake.invincibleUntil && Math.floor(now / 100) % 2 === 0) return;
 
-    function drawItem(item, color) {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(item.x * gridSize + gridSize/2, item.y * gridSize + gridSize/2, gridSize/2 - 2, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    function checkItemCollision(snake, playerNum) {
-        const head = snake.body[0];
-
-        // 일반 사과 먹었을 때 (길이 증가)
-        if (head.x === food.x && head.y === food.y) {
-            snake.body.push({...snake.body[snake.body.length - 1]}); // 꼬리 복제하여 추가
-            spawnItem(food);
-        }
-
-        // 독사과 먹었을 때 (길이 감소)
-        if (head.x === poison.x && head.y === poison.y) {
-            shrinkSnake(snake, playerNum);
-            spawnItem(poison);
-        }
-    }
-
-    // 플레이어 간의 충돌 감지 (랜덤 패널티)
-    function checkPlayerCollision() {
-        if (collisionCooldown > 0) return; // 쿨다운 중이면 무시
-
-        let collided = false;
-        const head1 = snake1.body[0];
-        const head2 = snake2.body[0];
-
-        // P1이 P2와 부딪혔는지 검사
-        for (let part of snake2.body) {
-            if (head1.x === part.x && head1.y === part.y) collided = true;
-        }
-        // P2가 P1과 부딪혔는지 검사
-        for (let part of snake1.body) {
-            if (head2.x === part.x && head2.y === part.y) collided = true;
-        }
-
-        if (collided) {
-            // 랜덤으로 한 명의 길이 감소
-            if (Math.random() < 0.5) {
-                shrinkSnake(snake1, 1);
-            } else {
-                shrinkSnake(snake2, 2);
+        snake.body.forEach((segment, index) => {
+            ctx.fillStyle = snake.color; // 전체를 본인의 고유 색으로 칠함
+            ctx.fillRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2);
+            
+            // 머리를 구분하기 위해 가운데에 검은색 작은 사각형(눈)을 찍어줌
+            if (index === 0) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(segment.x * gridSize + 6, segment.y * gridSize + 6, 8, 8);
             }
-            collisionCooldown = 5; // 0.5초(5프레임) 동안 충돌 패널티 면제
-        }
+        });
     }
 
-    function checkWallCollision(snake, playerNum) {
-        const head = snake.body[0];
-        if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-            gameOver(`플레이어 ${playerNum}이(가) 벽에 부딪혔습니다!`);
-        }
-    }
+    drawSnake(p1);
+    drawSnake(p2);
 
-    function checkSelfCollision(snake, playerNum) {
-        const head = snake.body[0];
-        for (let i = 1; i < snake.body.length; i++) {
-            if (head.x === snake.body[i].x && head.y === snake.body[i].y) {
-                gameOver(`플레이어 ${playerNum}이(가) 자기 몸에 부딪혔습니다!`);
-            }
-        }
-    }
+    document.getElementById('score1').innerText = p1.body.length;
+    document.getElementById('score2').innerText = p2.body.length;
+}
 
-    function gameOver(message) {
-        clearInterval(gameInterval);
-        setTimeout(() => {
-            alert(message + "\n새로고침(F5)을 눌러 다시 시작하세요.");
-        }, 10);
-    }
-
-    // 게임 시작 (1초에 10번 업데이트)
-    gameInterval = setInterval(drawGame, 100);
+for(let i=0; i<MAX_ITEMS; i++) spawnItem();
+requestAnimationFrame(gameLoop);
 
 </script>
 </body>
