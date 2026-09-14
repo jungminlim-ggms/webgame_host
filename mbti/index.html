@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f7ed">
+  <meta name="description" content="스무 가지 학교생활 이야기로 알아보는 나의 마음. 어린이를 위한 오프라인 성향 탐색 놀이입니다.">
+  <title>마음숲 탐험대 · 나와 닮은 동물 친구</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">내용으로 바로 가기</a>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="마음숲 탐험대 처음으로"><span class="brand-icon" aria-hidden="true">✿</span><span>마음숲 <strong>탐험대</strong></span></a>
+    <nav aria-label="주 메뉴">
+      <a href="#letters">알파벳 놀이터</a>
+      <a href="#friends">동물 친구들</a>
+      <button id="motion-toggle" class="quiet-btn" aria-pressed="false">움직임 줄이기</button>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section id="home" class="page" aria-labelledby="home-title">
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span aria-hidden="true">☀</span> 나를 알아보는 작은 모험</p>
+          <h1 id="home-title" tabindex="-1">내 마음과 닮은<br><span>동물 친구</span>는?</h1>
+          <p class="hero-description">학교에서, 놀이터에서, 집에서!<br>스무 가지 이야기 속 나를 만나 봐요.</p>
+          <div class="home-badges"><span>20가지 이야기</span><span>정답은 없어요</span><span>천천히 해도 좋아요</span></div>
+          <button id="start" class="button primary large">내 친구 찾으러 출발! <span aria-hidden="true">↗</span></button>
+          <button id="continue" class="button secondary" hidden>이어서 탐험하기</button>
+          <p class="small-note">글이 어렵다면 어른과 함께 읽어도 좋아요.</p>
+        </div>
+        <div class="forest-scene" role="img" aria-label="초록 숲의 오솔길에서 토끼, 고양이, 곰, 여우 친구들이 기다려요">
+          <div class="sun" aria-hidden="true">☀</div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div>
+          <div class="hill hill-back"></div><div class="hill hill-front"></div><div class="trail"></div>
+          <div class="tree tree-one" aria-hidden="true">♣</div><div class="tree tree-two" aria-hidden="true">♣</div>
+          <div class="animal-sticker rabbit"><span>🐰</span><i>상상이 퐁퐁!</i></div>
+          <div class="animal-sticker cat"><span>🐱</span><i>이건 어떨까?</i></div>
+          <div class="animal-sticker fox"><span>🦊</span><i>같이 가 볼래?</i></div>
+          <div class="animal-sticker bear"><span>🐻</span><i>네 이야기가 궁금해</i></div>
+          <span class="flower f1" aria-hidden="true">✿</span><span class="flower f2" aria-hidden="true">✿</span><span class="flower f3" aria-hidden="true">✿</span>
+          <span class="scene-label">모두 달라서 더 즐거운 숲</span>
+        </div>
+      </div>
+      <div class="promise-strip"><div><span aria-hidden="true">♡</span><p><strong>어떤 답도 괜찮아요</strong><br>잘하는 것보다 편한 것을 골라요.</p></div><div><span aria-hidden="true">↺</span><p><strong>마음이 바뀌어도 괜찮아요</strong><br>이전 이야기로 돌아갈 수 있어요.</p></div><div><span aria-hidden="true">⌂</span><p><strong>인터넷 없이도 함께해요</strong><br>이름도, 회원가입도 필요 없어요.</p></div></div>
+      <p class="honest-note">이 활동은 MBTI의 네 가지 구분을 쉽게 풀어 만든 <strong>성향 탐색 놀이</strong>예요. 공식 MBTI 검사가 아니며, 오늘 고른 답으로 성격이나 능력을 정하지 않아요.</p>
+    </section>
+
+    <section id="quiz" class="page" aria-labelledby="question-title" hidden>
+      <div class="quiz-top"><a href="#home" class="text-link">← 잠깐 쉬어 가기</a><span id="question-count">이야기 1 / 20</span></div>
+      <div class="progress-row"><span aria-hidden="true">🌱</span><div id="quiz-progress" class="progress-track" role="progressbar" aria-label="답한 이야기 수" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><div id="progress-fill"></div></div><span id="progress-label">0개 골랐어요</span></div>
+      <div class="quiz-card">
+        <div class="question-scene"><span id="question-emoji" aria-hidden="true">🎨</span><span id="question-place">학교에서</span></div>
+        <p class="eyebrow">요즘의 나와 더 가까운 쪽은?</p>
+        <h1 id="question-title" tabindex="-1"></h1>
+        <p class="question-help" id="choice-help">둘 다 좋아도 괜찮아요. 조금 더 편한 쪽을 골라 봐요.</p>
+        <fieldset id="choices" aria-describedby="choice-help"><legend class="sr-only">나와 더 가까운 답 고르기</legend></fieldset>
+        <div class="quiz-actions"><button id="previous" class="button secondary">← 이전 이야기</button><button id="next-question" class="button primary" disabled>다음 이야기 →</button></div>
+        <p class="encouragement" id="encouragement" aria-live="polite">서두르지 않아도 돼요. 내 마음을 생각해 봐요.</p>
+      </div>
+      <p class="privacy-line">답은 이 창 안에서만 사용해요. 새로고침하거나 창을 닫으면 사라져요.</p>
+    </section>
+
+    <section id="result" class="page" aria-labelledby="result-title" hidden>
+      <div class="page-intro"><p class="eyebrow">스무 가지 이야기를 모두 만났어요!</p><h1 id="result-title" tabindex="-1">오늘 발견한 나의 모습</h1><p>이 결과는 오늘의 작은 힌트예요. 내가 느끼는 모습과 다를 수도 있어요.</p></div>
+      <div id="result-content"></div>
+      <div class="result-actions"><a href="#letters" class="button primary">내 알파벳 뜻 알아보기 →</a><a href="#friends" class="button secondary">다른 친구 만나기</a><button id="review" class="button secondary">내 답 다시 보기</button><button id="print" class="quiet-btn">결과 인쇄</button></div>
+      <div class="reflection"><span aria-hidden="true">💬</span><div><h2>나의 이야기를 나눠 볼까요?</h2><p>“나와 닮은 부분은 ____예요. 나는 ____할 때 다른 모습도 있어요.”</p><p class="small-note">친구와 결과가 달라도 좋아요. 어떤 유형이 더 좋은 것은 아니에요.</p></div></div>
+      <button id="restart" class="text-link reset-link">처음부터 다시 탐험하기</button>
+    </section>
+
+    <section id="letters" class="page" aria-labelledby="letters-title" hidden>
+      <div class="page-intro"><p class="eyebrow">알파벳 놀이터</p><h1 id="letters-title" tabindex="-1">네 글자에는 어떤 뜻이 있을까?</h1><p>어느 쪽이 더 편한지 살펴보는 이름이에요.<br>우리는 양쪽 모습을 모두 가지고 있어요.</p></div>
+      <div class="my-code-banner" id="my-code-banner" hidden></div>
+      <div id="letter-pairs" class="letter-pairs"></div>
+      <div class="gentle-note"><span aria-hidden="true">🌈</span><p><strong>꼭 기억해요</strong><br>E도 조용히 쉴 수 있고, I도 친구와 신나게 놀 수 있어요. T와 F 모두 따뜻할 수 있고, J와 P 모두 약속을 지킬 수 있어요.</p></div>
+      <div class="center-actions"><a href="#friends" class="button primary">16가지 동물 친구 만나기 →</a><a href="#result" class="button secondary result-link" hidden>내 결과로 돌아가기</a><a href="#home" class="text-link">처음으로</a></div>
+    </section>
+
+    <section id="friends" class="page" aria-labelledby="friends-title" hidden>
+      <div class="page-intro"><p class="eyebrow">마음숲 친구 도감</p><h1 id="friends-title" tabindex="-1">모두 달라서, 모두 소중해!</h1><p>친구를 눌러 이야기를 읽어 봐요.<br>동물은 기억을 돕는 별명일 뿐, 성격을 정하는 기준은 아니에요.</p></div>
+      <div class="friend-filters" role="group" aria-label="동물 친구 보기"><button class="filter active" data-filter="all" aria-pressed="true">모두 보기 <span>16</span></button><button class="filter" data-filter="E" aria-pressed="false">E 친구들</button><button class="filter" data-filter="I" aria-pressed="false">I 친구들</button></div>
+      <p id="friend-count" class="sr-only" aria-live="polite">16명의 친구</p><div id="friend-grid" class="friend-grid"></div>
+      <div class="gentle-note"><span aria-hidden="true">🤝</span><p><strong>다르다고 다투지 않아요</strong><br>“너는 왜 그래?” 대신 “너는 어떻게 하고 싶어?”라고 물어봐요. 결과로 짝이나 역할을 정하지 않아요.</p></div>
+      <div class="center-actions"><a href="#letters" class="button secondary">알파벳 뜻 다시 보기</a><a href="#result" class="button primary result-link" hidden>내 결과로 돌아가기</a><a href="#home" class="text-link">처음으로</a></div>
+    </section>
+
+    <section id="guide" class="page" aria-labelledby="guide-title" hidden>
+      <div class="page-intro"><p class="eyebrow">보호자 · 선생님 안내</p><h1 id="guide-title" tabindex="-1">아이의 말이 결과보다 중요해요</h1><p>공식 심리검사나 발달·상담 진단을 대신하지 않는 대화 활동입니다.</p></div>
+      <div class="guide-body">
+        <h2>함께 읽는 방법</h2><p>질문과 두 선택지를 같은 어조로 읽어 주세요. 좋은 답을 암시하지 말고 아이가 실제로 편한 쪽을 고르게 합니다. 경험이 없거나 구분이 어려우면 ‘둘 다 비슷해요 · 잘 모르겠어요’를 선택할 수 있습니다. 시간 제한은 없습니다.</p>
+        <h2>20문항 구성과 결과 계산</h2><p>E/I, S/N, T/F, J/P를 각 5문항씩 배치했습니다. 선택한 쪽에 1표, 중립 답은 양쪽에 0표를 줍니다. 한쪽이 많으면 그 글자를 표시합니다. 동점은 X로 표시하고 두 성향을 함께 설명합니다. X는 MBTI의 다섯 번째 성향이 아니라 이 활동의 ‘아직 정하지 않음’ 표시입니다.</p><p>3 대 2처럼 1표 차이는 ‘조금 더 골랐어요’, 중립이 3개 이상이면 ‘아직 천천히 알아가는 중’으로 안내합니다. 응답 횟수는 성격의 비율, 검사 정확도, 능력 점수가 아닙니다.</p>
+        <h2>원본에서 달라진 점</h2><p>원본의 학교생활 상황과 동물 친구 콘셉트를 살렸습니다. 복도 뛰기, 외계인 침공, 늦은 밤 숙제 같은 표현을 안전하고 친숙한 상황으로 바꿨습니다. ‘T는 냉정함’, ‘P는 게으름’, ‘S는 상상 부족’처럼 오해할 수 있는 대비와 유형별 능력·인기 순위를 제거했습니다. 원본 12문항별 변경 내역은 함께 제공한 README.md에서 확인할 수 있습니다.</p>
+        <h2>교실에서 이어 가기</h2><p>먼저 “친구와 쉬는 방법이 달라도 함께 즐겁게 지내려면?”을 묻습니다. 각자 실제 경험 한 가지를 말하고, 다른 선택을 한 친구와 서로의 이유를 들어 봅니다. 마지막에는 모두 편한 놀이 방법을 함께 제안합니다. 결과 유형이나 특정 답을 평가하지 않습니다.</p>
+        <h2>정보와 오프라인 사용</h2><p>이름·생년월일·학번을 묻지 않습니다. 답과 결과는 현재 창의 메모리에서만 처리하며 저장·전송하지 않습니다. 새로고침하면 사라집니다. 결과 인쇄는 사용자가 직접 선택합니다. 세 파일을 같은 폴더에 두고 index.html을 열면 인터넷 없이 사용할 수 있습니다.</p>
+        <h2>참고 자료 <span class="small-note">아래 링크를 열 때만 인터넷 필요</span></h2><ul class="source-list"><li><a href="https://s26120-debug.github.io/ghh/" target="_blank" rel="noopener">수정 전 학교생활 동물 MBTI 페이지</a></li><li><a href="https://www.myersbriggs.org/my-mbti-personality-type/the-mbti-preferences/" target="_blank" rel="noopener">Myers & Briggs Foundation: 선호의 의미</a></li><li><a href="https://www.myersbriggs.org/using-type-as-a-professional/mbti-code-of-ethics/" target="_blank" rel="noopener">Myers & Briggs Foundation: 유형을 단정·서열화하지 않는 해석</a></li></ul><p class="small-note">새 문항과 설명은 이 활동을 위해 작성했습니다. 표준화·타당화된 아동용 검사 문항이 아닙니다. MBTI®는 The Myers & Briggs Foundation 및 관련 권리자의 상표로, 이 활동은 공식 검사나 제휴 서비스가 아닙니다.</p>
+      </div>
+      <div class="center-actions"><a href="#home" class="button primary">아이와 함께 시작하기</a></div>
+    </section>
+    <noscript><div class="gentle-note">이 활동에는 JavaScript가 필요해요. 브라우저에서 JavaScript를 허용한 뒤 다시 열어 주세요.</div></noscript>
+  </main>
+  <footer class="site-footer"><span>✿ 마음숲 탐험대 <span class="footer-divider">/</span> 나답게, 함께 즐겁게</span><a href="#guide">보호자 · 선생님 안내</a></footer>
+  <div id="celebration" aria-hidden="true"></div><p id="live-message" class="sr-only" role="status" aria-live="polite"></p>
+  <dialog id="friend-dialog" aria-labelledby="friend-dialog-title"><button class="dialog-close" data-close="friend-dialog" aria-label="친구 소개 닫기">×</button><div id="friend-detail"></div><button class="button primary" data-close="friend-dialog">다른 친구도 볼래요</button></dialog>
+  <dialog id="restart-dialog" aria-labelledby="restart-title"><span class="dialog-emoji" aria-hidden="true">🌱</span><h2 id="restart-title">새롭게 출발할까요?</h2><p>지금 고른 답과 결과를 지우고<br>첫 번째 이야기부터 시작해요.</p><div class="center-actions"><button id="cancel-restart" class="button secondary">그대로 둘래요</button><button id="confirm-restart" class="button primary">새로 시작할래요</button></div></dialog>
+</body>
+</html>
+
