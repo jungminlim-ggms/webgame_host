@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#153d35"><meta name="description" content="ESP32 2차시: 버튼 입력과 조건문으로 도움 요청 LED 신호를 만들고 AI의 제안을 검증하는 45분 수업">
+  <title>버튼으로 보내는 도움 요청 · ESP32 LAB 2차시</title>
+  <link rel="stylesheet" href="style.css"><script src="lesson2.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">수업 내용으로 건너뛰기</a>
+<aside class="sidebar">
+  <a class="brand" href="./"><span class="brand-icon">⌘</span> ESP32 <b>LAB</b></a>
+  <p class="side-label">AI × PHYSICAL COMPUTING</p>
+  <div class="course-label">프로그래밍 동아리<br><strong>버튼으로 보내는 신호</strong></div>
+  <nav aria-label="수업 순서">
+    <a href="#intro"><span>01</span> 오늘의 미션 <small>5분</small></a>
+    <a href="#input"><span>02</span> 입력을 알아보기 <small>8분</small></a>
+    <a href="#build"><span>03</span> 연결하고 실행하기 <small>10분</small></a>
+    <a href="#ai"><span>04</span> AI와 신호 설계 <small>12분</small></a>
+    <a href="#share"><span>05</span> 짝과 검증하기 <small>5분</small></a>
+    <a href="#reflect"><span>06</span> 기록하고 나누기 <small>5분</small></a>
+  </nav>
+  <div class="side-bottom"><span class="tiny-led"></span> 내 요청을, 빛으로 전달하다<p>LESSON 02 · 45 MIN</p><button class="text-button" id="print">수업 자료 인쇄 ↗</button></div>
+</aside>
+<main id="main">
+  <header class="topbar"><span>경구중학교 <i>/</i> 프로그래밍 동아리</span><span class="pill">입문 · 2인 1조</span></header>
+  <div class="lesson-switch" aria-label="차시 선택"><a href="./">1차시 · LED 첫걸음</a><a href="lesson2.html" aria-current="page">2차시 · 버튼으로 신호 보내기</a></div>
+  <section id="intro" class="hero">
+    <div class="eyebrow">LESSON 02 <span>PRESS TO CONNECT</span></div>
+    <div class="hero-grid">
+      <div><h1>버튼 한 번,<br>내 <em>요청</em>을 전하다.</h1><p class="hero-copy">혼자 깜박이던 LED가 내 행동에 반응한다면?<br> 버튼 입력과 조건문으로<br> 우리 동아리의 도움 요청 신호를 만들어 봅시다.</p><a class="button" href="#input">입력 실험 시작하기 ↗</a><div class="hero-meta"><span>◷ 45분</span><span>⌁ ESP32-WROOM-32</span><span>✦ 1차시 회로 활용</span></div></div>
+      <div class="panel"><span class="section-tag">TODAY’S CONNECTION</span><div class="signal-flow"><span>누름 버튼<small>입력 · GPIO 18</small></span><b>↓</b><span>눌렸는지 판단<small>처리 · if / else</small></span><b>↓</b><span>도움 요청 LED<small>출력 · GPIO 23</small></span></div></div>
+    </div>
+    <div class="mission"><span class="section-tag">오늘의 탐구 질문</span><h2>사람의 요청을 컴퓨터가 알아듣고, 다른 사람에게 분명하게 전달하려면?</h2><p>1차시의 ‘자동 반복’에서 2차시의 ‘입력에 따른 선택’으로 나아갑니다.</p></div>
+    <div class="goals"><div><b>01 / 이해</b><p>버튼 입력값과 조건에 따라 LED가 달라지는 이유를 설명해요.</p></div><div><b>02 / 실험</b><p>누름·놓음·반복 누름에서 예상과 실제 동작을 비교해요.</p></div><div><b>03 / 검증</b><p>AI의 제안과 짝의 해석을 확인하고 수정 이유를 남겨요.</p></div></div>
+    <p class="note">시작할 때 함께 볼 성공 기준: ① 입력–조건–출력을 설명하기 ② 예상과 관찰을 비교하기 ③ AI 제안·짝의 피드백을 검증하고 수정하기.</p>
+  </section>
+  <section id="input">
+    <div class="section-head"><div><span class="eyebrow">02 · READ THE INPUT</span><h2>누르면 0? 입력의 약속을 알아봐요.</h2></div><span class="duration">8분</span></div>
+    <p class="lead">이번 회로는 <code>INPUT_PULLUP</code>을 사용합니다. 보드 안의 저항이 버튼을 놓았을 때 입력을 HIGH(1)로 유지하고, 버튼을 누르면 GND와 연결되어 LOW(0)가 됩니다. <strong>‘눌림 = 1’이라는 규칙이 항상 맞는 것은 아니에요.</strong></p>
+    <div class="two-col">
+      <div class="panel"><h3>먼저 예측하고, 모형에서 확인하기</h3><label class="field-label" for="prediction2">버튼을 놓거나 누르면 어떤 값이 나올까요?</label><textarea id="prediction2" data-record placeholder="놓았을 때 __, 눌렀을 때 __. 그렇게 생각한 이유는…"></textarea><div class="quiz"><p>이번 코드에서 ‘눌림’을 판별할 조건은?</p><button data-answer="HIGH">buttonState == HIGH</button><button data-answer="LOW">buttonState == LOW</button><p id="quiz-feedback" class="feedback" aria-live="polite"></p></div></div>
+      <div class="panel sim-side"><span class="section-tag">INPUT → CONDITION → OUTPUT</span><div class="sim-led" id="button-led"></div><p id="model-state" role="status">버튼 놓음 · 입력 HIGH(1) · LED 꺼짐</p><button class="button" id="hold-button">누르고 있는 동안 요청 보내기</button><p class="note">마우스·손가락으로 누르거나, 버튼에 초점을 맞추고 Space 또는 Enter를 길게 누르세요.</p><label class="model-checkbox"><input id="model-switch" type="checkbox"> 모형에서 누름 상태 유지하기</label><p class="note">화면 속 논리 모형입니다. 실제 보드와 연결되지 않으며 버튼 튐이나 회로 오류는 재현하지 않습니다.</p></div>
+    </div>
+  </section>
+  <section id="build">
+    <div class="section-head"><div><span class="eyebrow">03 · CONNECT & RUN</span><h2>LED 회로에 버튼 입력을 더해요.</h2></div><span class="duration">10분</span></div>
+    <div class="safety"><b>USB를 분리하고 연결하세요.</b> 1차시의 330 Ω 저항과 LED 극성을 유지합니다. 버튼은 GPIO 18과 GND 사이에 연결하고, 5V에 연결하지 않습니다. 뜨겁거나 냄새가 나면 전원을 분리하고 선생님에게 알리세요.</div>
+    <div class="two-col">
+      <article class="panel"><h3>준비물 · 연결 체크</h3><div class="materials"><label><input type="checkbox"> 1차시 ESP32·LED·330 Ω 회로</label><label><input type="checkbox"> 누름 버튼 1개 · 추가 점퍼선 2개</label><label><input type="checkbox"> 데이터 USB 케이블 · Arduino IDE</label><label><input type="checkbox"> 보드에서 18 또는 IO18 핀 확인</label></div><p>LED: <b>GPIO 23 → 330 Ω → LED + / LED − → GND</b></p><p>버튼: <b>GPIO 18 → 버튼의 한 접점 / 다른 접점 → GND</b></p><p class="note">LED와 버튼 모두 같은 ESP32의 GND를 사용합니다. INPUT_PULLUP을 쓰므로 이 버튼 회로에는 별도 풀업 저항이 필요하지 않습니다. LED의 330 Ω 저항은 계속 필요합니다.</p><a href="./#circuit">1차시 LED 연결 지도 다시 보기 ↗</a></article>
+      <article class="panel"><h3>4핀 버튼, 네 다리가 모두 다른 것은 아니에요</h3>
+        <svg class="button-diagram" viewBox="0 0 440 260" role="img" aria-label="버튼의 A1과 A2는 항상 연결, B1과 B2도 항상 연결. 버튼을 누를 때 A와 B가 연결된다. GPIO18은 A, GND는 B에 연결한다.">
+          <rect x="100" y="45" width="240" height="165" rx="16" fill="#eef2e7" stroke="#aaba9e"/><path d="M130 75 V180 M310 75 V180" stroke="#547b64" stroke-width="6"/><path d="M130 120 H190 M250 120 H310 M190 120 L248 91" fill="none" stroke="#a97c36" stroke-width="5"/><g fill="#204c3e"><circle cx="130" cy="75" r="6"/><circle cx="130" cy="180" r="6"/><circle cx="310" cy="75" r="6"/><circle cx="310" cy="180" r="6"/></g><g fill="#204c3e" font-size="15"><text x="97" y="31">GPIO 18 → A</text><text x="284" y="31">B → GND</text><text x="143" y="80">A1</text><text x="143" y="185">A2</text><text x="267" y="80">B1</text><text x="267" y="185">B2</text><text x="157" y="158">누르면 A–B 연결</text><text x="65" y="243">접점 관계를 나타낸 그림 · 실제 핀 방향은 확인 필요</text></g>
+        </svg>
+        <p class="note">A·B는 설명을 위한 이름입니다. 다리의 겉모양만 보고 판단하지 마세요. 선생님과 제품 도면 또는 전원을 뺀 상태의 도통 측정으로 항상 연결된 두 다리씩을 찾습니다. A와 B가 브레드보드의 같은 연결 묶음에 들어가지 않게 꽂으세요. 홈을 가로지르는 방향도 실제 접점 배치에 맞춰 확인합니다.</p>
+      </article>
+    </div>
+    <div class="lab lesson2-code"><div class="code-side"><div class="code-toolbar"><span>help_button.ino</span><button id="copy-code2">코드 복사</button></div><pre><code id="code2"></code></pre></div><div class="panel"><h3>읽기 → 판단 → 출력</h3><dl><dt>읽기</dt><dd><code>digitalRead(18)</code>로 현재 버튼 값을 읽어요.</dd><dt>판단</dt><dd><code>== LOW</code>이면 눌린 상태예요. <code>==</code>는 같은지 비교합니다.</dd><dt>출력</dt><dd>눌리면 LED를 켜고, 그렇지 않으면 꺼요.</dd></dl><p class="note">1차시의 긴 delay는 제거했습니다. 아래 20 ms 대기는 출력 기록 속도를 제한하기 위한 것으로, 정확한 버튼 튐 제거 알고리즘은 아닙니다. 이번에는 누른 횟수를 세지 않아요.</p></div></div>
+    <details open class="setup"><summary>업로드하고 실제 입력값 확인하기</summary><ol><li>짝이 버튼 접점과 LED 경로를 확인한 다음 USB를 연결합니다.</li><li>Arduino IDE에서 확인된 보드(일반 WROOM-32 개발보드는 ESP32 Dev Module)와 연결된 포트를 선택합니다.</li><li>위 전체 코드를 붙여 넣고 검증(✓) → 업로드(→)합니다. 1차시 코드에 덧붙이지 않습니다.</li><li>시리얼 모니터를 열고 <b>115200 baud</b>를 선택합니다. 놓으면 <b>1</b>, 누르면 <b>0</b>인지 확인합니다.</li><li>입력값과 실제 LED가 함께 바뀌는지 짝에게 설명합니다. 보드 내장 전원 LED와 외부 LED를 구분하세요.</li></ol></details>
+    <div class="two-col"><details><summary>계속 0이 나오거나 LED가 계속 켜져요</summary><p>USB를 뺀 뒤 버튼의 항상 연결된 같은 접점 두 다리를 골랐는지, A와 B를 같은 브레드보드 묶음에 꽂았는지 확인하세요. GPIO 18이 GND에 계속 연결되어 있을 수 있습니다.</p></details><details><summary>계속 1이 나오거나 값이 불안정해요</summary><p>버튼을 눌렀을 때 GPIO 18에서 GND로 길이 이어지는지 확인합니다. 핀 번호와 <code>INPUT_PULLUP</code> 설정을 확인하세요. 입력은 정상인데 빛이 안 나면 1차시 LED 회로를 점검합니다.</p></details></div>
+  </section>
+  <section id="ai">
+    <div class="section-head"><div><span class="eyebrow">04 · DESIGN WITH AI</span><h2>어떤 요청을, 어떤 신호로 보낼까요?</h2></div><span class="duration">12분</span></div>
+    <p class="lead">짝과 상황과 신호의 의미를 먼저 정하세요. AI에게는 힌트부터 요청하고, 입력 핀·눌림 조건·출력 핀을 확인한 뒤 한 가지 동작을 수정합니다.</p>
+    <div class="two-col"><div class="panel"><label class="field-label" for="mission2">알리고 싶은 상황</label><select id="mission2"><option>도움 요청</option><option>발표 준비 완료</option><option>실험 시작 요청</option></select><label class="field-label" for="design2">내가 정한 신호와 그 이유</label><textarea id="design2" data-record placeholder="예: 누르는 동안 켜짐은 요청 중, 놓으면 꺼짐은 요청 취소. 다른 조도 알아볼 수 있게 표지판을 붙인다."></textarea><p class="note">기본: 눌림·놓음의 의미를 정하고 조건을 설명하기.<br>변형: 누르는 동안 깜박이게 바꾸고, 놓으면 얼마나 빨리 꺼지는지 확인하기.<br>추가: 접수 응답 신호를 순서도로 설계하기.</p></div><div class="prompt-card"><div class="code-toolbar"><span>AI에게 건넬 질문</span><button id="copy-prompt2">질문 복사</button></div><p id="prompt2"></p><p class="note">복사한 질문 아래에 현재 코드를 함께 붙여 넣으세요. 학교에서 허용한 AI 도구를 사용하고 개인정보는 넣지 않습니다. 이 페이지는 AI와 자동 연결되지 않아요.</p></div></div>
+    <div class="verify-row"><div><b>01. 핀과 조건 확인</b><p>버튼 18, LED 23, INPUT_PULLUP, 눌림 LOW가 유지되나요?</p></div><div><b>02. 예상과 관찰 비교</b><p>누르고·놓고·다시 누르면 어떻게 될까요? 실제 보드에서 확인하세요.</p></div><div><b>03. 응답 속도 확인</b><p>긴 delay가 있으면 버튼을 놓아도 바로 반응하지 않을 수 있어요. 기다리는 구간을 찾아보세요.</p></div></div>
+    <details><summary>AI 없이 진행하거나 도움이 필요할 때</summary><p>현재 코드의 조건 <code>buttonState == LOW</code>를 HIGH로 바꾸면 언제 켜질지 먼저 예측합니다. 업로드해 비교한 뒤 도움 요청이라는 목적에 맞는 조건을 선택하세요. 한 명이 제안하고 다른 한 명이 근거를 확인합니다.</p></details>
+    <p class="note">‘한 번 누르면 켜지고 다시 누르면 꺼짐’은 다음 차시 도전입니다. 상태 기억, 눌림 순간 감지, 버튼 튐 처리가 함께 필요하므로 조건문만 뒤집어 구현하지 않아요.</p>
+  </section>
+  <section id="share">
+    <div class="section-head"><div><span class="eyebrow">05 · TEST TOGETHER</span><h2>내가 만든 신호, 친구도 알아볼까요?</h2></div><span class="duration">5분</span></div>
+    <p class="lead">연결자와 점검자의 역할을 바꾸세요. 먼저 신호만 보여 주고 짝이 의미를 추측하게 합니다. 그다음 의도와 비교하고 표현을 개선합니다.</p>
+    <div class="table-scroll"><table class="test-table"><caption>실물 검증표 · 각 상황에서 예상과 관찰을 함께 적기</caption><thead><tr><th scope="col">시험 상황</th><th scope="col">기본 코드의 예상</th><th scope="col">우리 코드의 예상 → 실제 관찰</th></tr></thead><tbody><tr><th scope="row">놓고 있기</th><td>HIGH(1), 꺼짐</td><td><input id="test-rest" data-record aria-label="놓고 있기 예상과 관찰" placeholder="예상 → 관찰"></td></tr><tr><th scope="row">누르고 있기</th><td>LOW(0), 켜짐</td><td><input id="test-press" data-record aria-label="누르고 있기 예상과 관찰" placeholder="예상 → 관찰"></td></tr><tr><th scope="row">놓고 다시 누르기</th><td>1 → 0, 꺼짐 → 켜짐</td><td><input id="test-repeat" data-record aria-label="다시 누르기 예상과 관찰" placeholder="예상 → 관찰"></td></tr></tbody></table></div>
+    <p class="note">처음 두 행을 비교해 원리를 설명하고, 마지막 행으로 재현되는지 확인합니다. 수정 후에도 같은 시험을 다시 해 보세요.</p>
+  </section>
+  <section id="reflect">
+    <div class="section-head"><div><span class="eyebrow">06 · REFLECT & TRANSFER</span><h2>내가 확인한 증거를 남겨요.</h2></div><span class="duration">5분</span></div>
+    <div class="journal"><label for="explain2">01 / 입력 → 조건 판단 → 출력의 관계를 설명해 보세요.</label><textarea id="explain2" data-record placeholder="버튼을 누르면 입력은…, 조건은…, 그래서 LED는…"></textarea><label for="feedback2">02 / AI 제안 또는 짝의 의견에서 무엇을 확인하고 수정했나요?</label><textarea id="feedback2" data-record placeholder="확인한 코드, 실제 관찰, 짝이 이해한 의미, 수정 이유를 적어요."></textarea><label for="transfer2">03 / 빛을 보기 어려운 사람에게는 어떻게 요청을 전달할까요?</label><textarea id="transfer2" data-record placeholder="다음 프로젝트에 추가하고 싶은 출력과 그 이유를 적어요."></textarea><div class="journal-actions"><button class="button" id="download2">2차시 탐구 기록 내려받기 ↓</button><button class="text-button" id="reset2">2차시 기록 지우기</button><span id="save-status2" role="status">이 브라우저에만 자동 저장 · 제출되지 않아요</span></div><p class="note">1차시 기록과 별도로 저장됩니다. 공용 PC에서는 내려받은 뒤 2차시 기록을 지우세요.</p></div>
+    <details class="teacher"><summary>교사용 운영 안내 · 교육과정 정합성 점검</summary><p><b>45분 운영:</b> 복습·미션 5분 → 입력 예측·모형 8분 → 회로·코드 실행 10분 → AI와 신호 설계 12분 → 짝 검증 5분 → 성찰 5분. 교사는 사전에 버튼 접점, GPIO 18, 1차시 LED 회로, 보드 업로드를 확인합니다. 연결에 시간이 더 필요하면 깜박임 변형을 생략하고 기본 코드와 의미 전달 검증에 집중합니다.</p><p><b>학습 연결:</b> 정보 교과의 컴퓨팅 시스템과 프로그래밍 학습에 연결하는 동아리 활동입니다. 특정 학년 성취기준의 달성을 이 한 차시만으로 판정하지 않습니다. 핵심 개념은 입력·조건·출력이며 핵심 아이디어는 ‘시스템은 입력 상태를 읽고 조건에 따라 다른 출력을 만든다’입니다.</p><p><b>과정 피드백:</b> ‘무엇을 예상했니? → 입력값은 실제로 무엇이었니? → 어느 조건이 실행됐니? → 다음에 무엇을 바꿀까?’로 질문합니다. 어려운 학생에게 핀 연결과 기본 코드 발판을 제공하고, 빠른 학생은 응답 신호 순서도를 설계합니다.</p><p><b>평가:</b> 공통 성공 기준인 입력–조건–출력 설명, 예측·관찰 비교, AI 검증·짝 피드백에 따른 수정 이유를 관찰과 탐구 기록으로 확인합니다. 실패한 회로라도 오류를 찾고 수정한 과정에 피드백합니다.</p><p><b>대구미래역량교육과정 정합성:</b> 신호의 목적과 표현을 선택하는 자율성, 예측–실험–수정의 주도성, 역할 교대와 공동 검증의 관계성을 반영합니다. 창의융합적 사고는 입력과 출력의 인과 설명, 공감·소통은 신호 해석 비교, 자기관리는 안전·검증 기록, 공동체 역량은 다른 사람도 이해하고 이용할 신호 설계로 드러납니다. 목표–활동–평가를 동일한 수행과 증거로 연결했습니다.</p></details>
+  </section>
+  <footer><a class="brand" href="./">ESP32 <b>LAB</b></a><p>미래를 배운다 함께 성장한다 · 경구중학교 프로그래밍 동아리</p><p><a href="./">← 1차시로 돌아가기</a> · <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/api/gpio.html" target="_blank" rel="noopener">Espressif 공식 GPIO 문서</a></p><p class="note">2026.10 · ESP32-WROOM-32 계열 기준. 화면 모형은 실물 회로 검증을 대신하지 않습니다.</p></footer>
+</main><div id="toast" role="status" aria-live="polite"></div>
+</body></html>
