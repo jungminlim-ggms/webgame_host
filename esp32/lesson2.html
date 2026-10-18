@@ -46,6 +46,51 @@
   <section id="build">
     <div class="section-head"><div><span class="eyebrow">03 · CONNECT & RUN</span><h2>LED 회로에 버튼 입력을 더해요.</h2></div><span class="duration">10분</span></div>
     <div class="safety"><b>USB를 분리하고 연결하세요.</b> 1차시의 330 Ω 저항과 LED 극성을 유지합니다. 버튼은 GPIO 18과 GND 사이에 연결하고, 5V에 연결하지 않습니다. 뜨겁거나 냄새가 나면 전원을 분리하고 선생님에게 알리세요.</div>
+    <div class="circuit-panel" id="lesson2-wiring">
+      <div class="circuit-title"><h3>브레드보드 연결 지도 · LED + 버튼</h3><span>1차시 LED 연결 유지 · 버튼 회로만 추가</span></div>
+      <div class="breadboard-scroll" tabindex="0" role="region" aria-label="2차시 브레드보드 연결 지도, 작은 화면에서는 좌우로 스크롤">
+        <svg class="lesson2-breadboard" viewBox="0 0 980 455" role="img" aria-labelledby="wiring-title wiring-desc">
+          <title id="wiring-title">GPIO 23의 LED 출력과 GPIO 18의 버튼 입력 연결 지도</title>
+          <desc id="wiring-desc">GPIO 23을 a5에, 저항을 e5와 e9 사이에, LED 긴 다리를 d9에 짧은 다리를 d12에, GND를 a12에 연결합니다. 버튼은 e16, f16, e18, f18에 꽂습니다. 이 그림의 버튼은 e16과 f16이 항상 연결되고 e18과 f18도 항상 연결되며 누르면 두 접점이 연결되는 배치입니다. GPIO 18은 a16, 추가 GND 점퍼는 b12와 b18을 잇습니다. 실제 버튼의 접점을 먼저 확인해야 합니다.</desc>
+          <rect x="28" y="148" width="154" height="220" rx="14" fill="#204b3d"/>
+          <rect x="48" y="166" width="114" height="61" rx="6" fill="#c9d5cb"/>
+          <text x="66" y="204" fill="#204b3d" font-size="18">ESP32</text>
+          <g fill="white" font-size="15"><text x="45" y="260">GPIO 23</text><text x="45" y="302">GPIO 18</text><text x="79" y="344">GND</text></g>
+          <rect x="278" y="76" width="644" height="307" rx="14" fill="#f7f6ef" stroke="#d6d8ce"/>
+          <rect x="295" y="224" width="610" height="20" rx="5" fill="#e2e4db"/>
+          <g id="lesson2-holes"></g>
+          <g fill="none" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M166 255 H244 V110 H416" stroke="#d98235"/>
+            <path d="M166 297 H220 V40 H680 V110" stroke="#8262b1"/>
+            <path d="M166 339 H200 V62 H584 V110" stroke="#427b90"/>
+            <path d="M584 134 C610 151 700 151 728 134" stroke="#427b90"/>
+          </g>
+          <g fill="#204b3d" stroke="white" stroke-width="2"><circle cx="166" cy="255" r="6"/><circle cx="166" cy="297" r="6"/><circle cx="166" cy="339" r="6"/></g>
+          <g stroke-width="2" stroke="white"><circle cx="416" cy="110" r="5" fill="#d98235"/><circle cx="680" cy="110" r="5" fill="#8262b1"/><circle cx="584" cy="110" r="5" fill="#427b90"/><circle cx="584" cy="134" r="5" fill="#427b90"/><circle cx="728" cy="134" r="5" fill="#427b90"/></g>
+          <path d="M416 206 H512" stroke="#96744d" stroke-width="4"/>
+          <rect x="435" y="195" width="58" height="22" rx="7" fill="#d9bb86" stroke="#80643f"/>
+          <path d="M448 195 V217 M459 195 V217 M474 195 V217" stroke="#a36a32" stroke-width="5"/>
+          <text x="438" y="244" font-size="13" fill="#52674c">330 Ω</text>
+          <path d="M512 182 V161 H534 M562 161 H584 V182" fill="none" stroke="#737b78" stroke-width="4"/>
+          <path d="M534 171 V151 A14 14 0 0 1 562 151 V171Z" fill="#b7df56" stroke="#6a8d30" stroke-width="2"/>
+          <g font-size="13" fill="#345941"><text x="500" y="171">+</text><text x="589" y="178">−</text></g>
+          <path d="M680 206 V262 M728 206 V262" stroke="#727971" stroke-width="5"/>
+          <rect x="666" y="215" width="76" height="38" rx="5" fill="#35453d"/>
+          <circle cx="704" cy="234" r="14" fill="#d4d9cd" stroke="#9aa88e" stroke-width="3"/>
+          <g fill="#204c3e" font-size="12"><text x="654" y="201">A1</text><text x="737" y="201">B1</text><text x="654" y="278">A2</text><text x="737" y="278">B2</text><text x="771" y="239">← 가운데 홈 위 버튼</text></g>
+          <g fill="#4c6459" font-size="13"><text x="293" y="407">같은 번호의 a–e는 연결 · 가운데 홈 건너편 f–j와는 분리</text><text x="293" y="432">버튼: A1–A2 항상 연결 / B1–B2 항상 연결 / 누르면 A–B 연결</text></g>
+        </svg>
+      </div>
+      <p class="note mobile-hint">↔ 작은 화면에서는 연결 지도를 좌우로 밀어 보세요.</p>
+      <div class="legend"><span><i class="orange"></i> GPIO 23 → a5</span><span>저항 e5 ↔ e9</span><span>LED + d9 / − d12</span><span><i class="blue"></i> GND → a12</span><span><i class="purple"></i> GPIO 18 → a16</span><span><i class="blue"></i> 추가 점퍼 b12 ↔ b18</span></div>
+      <p class="note">선이 교차하거나 구멍 위를 지나가는 곳은 연결점이 아닙니다. 색 점으로 표시한 선 끝만 지정된 구멍에 꽂으세요. ESP32 그림은 핀 이름을 설명하는 개념도이며 실제 보드의 핀 위치는 다를 수 있습니다.</p>
+    </div>
+    <ol class="steps wiring-steps">
+      <li><b>1차시 LED 회로 유지하기</b><p>저항 e5–e9, LED 긴 다리 d9·짧은 다리 d12, GPIO 23 → a5, GND → a12를 확인합니다.</p></li>
+      <li><b>버튼 접점을 확인하고 홈을 가로질러 꽂기</b><p>그림은 A1=e16, A2=f16 / B1=e18, B2=f18에 놓는 예입니다. <strong>e16–f16이 항상 연결되고 e18–f18도 항상 연결되는 접점 배치인지</strong> 전원을 빼고 먼저 확인하세요. 제품의 핀 간격이나 내부 연결이 다르면 구멍 위치를 그대로 따라 하지 말고, 선생님과 A·B가 분리되는 배치로 조정합니다.</p></li>
+      <li><b>버튼 입력과 공통 GND 연결하기</b><p>GPIO 18 → a16을 연결합니다. b12 → b18 점퍼선으로 LED 쪽 GND를 버튼의 B 접점까지 이어 줍니다. a12·b12·d12는 같은 묶음이고, b18·e18도 같은 묶음입니다.</p></li>
+      <li><b>짝과 누름·놓음 경로를 설명하기</b><p>놓으면 A–B가 분리되어 INPUT_PULLUP으로 HIGH. 누르면 GPIO 18 → A → B → GND 경로가 이어져 LOW. 연결을 확인한 다음 USB를 연결합니다.</p></li>
+    </ol>
     <div class="two-col">
       <article class="panel"><h3>준비물 · 연결 체크</h3><div class="materials"><label><input type="checkbox"> 1차시 ESP32·LED·330 Ω 회로</label><label><input type="checkbox"> 누름 버튼 1개 · 추가 점퍼선 2개</label><label><input type="checkbox"> 데이터 USB 케이블 · Arduino IDE</label><label><input type="checkbox"> 보드에서 18 또는 IO18 핀 확인</label></div><p>LED: <b>GPIO 23 → 330 Ω → LED + / LED − → GND</b></p><p>버튼: <b>GPIO 18 → 버튼의 한 접점 / 다른 접점 → GND</b></p><p class="note">LED와 버튼 모두 같은 ESP32의 GND를 사용합니다. INPUT_PULLUP을 쓰므로 이 버튼 회로에는 별도 풀업 저항이 필요하지 않습니다. LED의 330 Ω 저항은 계속 필요합니다.</p><a href="./#circuit">1차시 LED 연결 지도 다시 보기 ↗</a></article>
       <article class="panel"><h3>4핀 버튼, 네 다리가 모두 다른 것은 아니에요</h3>
