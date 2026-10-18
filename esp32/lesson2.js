@@ -1,25 +1,4 @@
 const byId = (id) => document.getElementById(id);
-// Breadboard coordinates match the printed connection table in lesson2.html.
-const svgNS = 'http://www.w3.org/2000/svg';
-const holeLayer = byId('lesson2-holes');
-function svgNode(tag, attributes, text) {
-  const node = document.createElementNS(svgNS, tag);
-  Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value));
-  if (text !== undefined) node.textContent = text;
-  holeLayer.append(node);
-}
-for (let column = 1; column <= 24; column++) {
-  const x = 320 + (column - 1) * 24;
-  svgNode('text', {x, y: 96, 'text-anchor': 'middle', 'font-size': 11, fill: '#62745a'}, column);
-  if ([5, 9, 12, 16, 18].includes(column)) {
-    svgNode('rect', {x: x - 6, y: 103, width: 12, height: 110, rx: 6, fill: column === 16 ? '#e4daef' : '#dce9c7'});
-  }
-  for (let row = 0; row < 10; row++) {
-    const y = 110 + row * 24 + (row >= 5 ? 32 : 0);
-    svgNode('circle', {cx: x, cy: y, r: 3, fill: '#aab5a4'});
-    if (column === 1) svgNode('text', {x: 295, y: y + 4, 'font-size': 12, fill: '#62745a'}, 'abcdefghij'[row]);
-  }
-}
 const basicCode = `const int LED_PIN = 23;
 const int BUTTON_PIN = 18;
 
