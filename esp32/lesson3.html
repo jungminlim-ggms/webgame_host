@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#153d35">
+<meta name="description" content="ESP32 3차시: 버튼을 놓아도 요청을 기억하는 LED. 상태 변수, 누름 순간 감지, AI 코드 탐구와 짝 검증을 경험하는 45분 수업.">
+<title>요청을 기억하는 LED · ESP32 LAB 3차시</title>
+<link rel="stylesheet" href="style.css?v=lesson3"><script src="lesson3.js?v=1" defer></script>
+</head><body>
+<a class="skip" href="#main">수업 내용으로 건너뛰기</a>
+<aside class="sidebar">
+<a class="brand" href="./"><span class="brand-icon">⌘</span> ESP32 <b>LAB</b></a><p class="side-label">AI × PHYSICAL COMPUTING</p>
+<div class="course-label">프로그래밍 동아리<br><strong>요청을 기억하는 LED</strong></div>
+<nav aria-label="수업 순서">
+<a href="#intro"><span>01</span> 불편에서 출발하기 <small>5분</small></a>
+<a href="#state"><span>02</span> 상태 규칙 설계 <small>7분</small></a>
+<a href="#run"><span>03</span> 기억하는 코드 실행 <small>10분</small></a>
+<a href="#ai"><span>04</span> AI와 코드 읽기 <small>10분</small></a>
+<a href="#test"><span>05</span> 짝과 반복 검증 <small>8분</small></a>
+<a href="#reflect"><span>06</span> 성찰과 개선 <small>5분</small></a>
+</nav>
+<div class="side-bottom"><span class="tiny-led"></span> 입력은 순간, 요청은 계속<p>LESSON 03 · 45 MIN</p><button class="text-button" id="print3">수업 자료 인쇄 ↗</button></div>
+</aside>
+<main id="main">
+<header class="topbar"><span>경구중학교 <i>/</i> 프로그래밍 동아리</span><span class="pill">입문 · 2인 1조</span></header>
+<div class="lesson-switch" aria-label="차시 선택"><a href="./">1차시 · LED 첫걸음</a><a href="lesson2.html">2차시 · 버튼으로 신호 보내기</a><a href="lesson3.html" aria-current="page">3차시 · 요청을 기억하는 LED</a></div>
+<section id="intro" class="hero">
+<div class="eyebrow">LESSON 03 <span>REMEMBER THE REQUEST</span></div>
+<div class="hero-grid"><div><h1>손을 떼어도,<br>내 <em>요청</em>은 계속.</h1><p class="hero-copy">도움을 기다리는 동안 버튼을 계속 눌러야 할까요?<br> 한 번 누르면 켜지고, 다시 누르면 꺼지는<br> ‘기억하는 LED’를 만들어 봅시다.</p><a class="button" href="#state">상태 실험 시작하기 ↗</a><div class="hero-meta"><span>◷ 45분</span><span>⌁ 2차시 회로 그대로</span><span>✦ 상태 변수 · 변화 감지</span></div></div><div class="panel"><span class="section-tag">OUR LEARNING JOURNEY</span><div class="signal-flow"><span>1차시 · 자동 반복<small>시간에 따라 깜박이는 빛</small></span><b>↓</b><span>2차시 · 지금의 입력<small>누르는 동안만 켜지는 빛</small></span><b>↓</b><span>3차시 · 상태 기억<small>놓아도 요청을 유지하는 빛</small></span></div></div></div>
+<div class="mission"><span class="section-tag">오늘의 탐구 질문</span><h2>버튼에서 손을 떼어도 도움 요청을 기억하게 하려면 무엇이 필요할까?</h2><p>‘지금 눌렸는가?’와 ‘요청이 남아 있는가?’를 구분해 봅시다.</p></div>
+<label class="field-label" for="problem3">2차시 장치에서 개선하고 싶은 불편 한 가지</label><textarea id="problem3" data-record data-label="발견한 불편" placeholder="예: 도움을 기다리는 동안 계속 누르고 있으면 다른 작업을 하기 어렵다."></textarea>
+<div class="goals"><div><b>01 / 구분</b><p>버튼 입력과 기억된 요청 상태가 다를 수 있음을 설명해요.</p></div><div><b>02 / 검증</b><p>길게 눌러도 한 번만 바뀌고, 놓아도 유지되는지 확인해요.</p></div><div><b>03 / 개선</b><p>AI 제안과 짝의 피드백을 검증하고 수정 이유를 남겨요.</p></div></div>
+<p class="note">위 세 가지가 오늘의 공통 성공 기준입니다. 켜진 결과뿐 아니라 예측·관찰·수정 과정도 함께 봅니다.</p>
+</section>
+<section id="state">
+<div class="section-head"><div><span class="eyebrow">02 · DESIGN THE STATE</span><h2>입력은 같아도, 기억은 다를 수 있어요.</h2></div><span class="duration">7분</span></div>
+<p class="lead">버튼을 놓으면 입력은 HIGH(1)입니다. 하지만 요청은 켜져 있거나 꺼져 있을 수 있어요. 그 차이를 <code>requestOn</code>이라는 변수에 저장합니다.</p>
+<div class="state-rule"><div><b>요청 없음</b><span>requestOn = false · LED 꺼짐</span></div><div class="state-arrows">새로 누르면 →<br>← 다시 누르면</div><div><b>요청 중</b><span>requestOn = true · LED 켜짐</span></div></div>
+<p class="note">놓기와 계속 누르고 있기에서는 현재 요청 상태를 유지합니다. 전원 재연결·보드 리셋 시에는 요청 없음으로 시작합니다. 전원을 꺼도 저장되는 기억은 아닙니다.</p>
+<label class="field-label" for="prediction3">‘누르기 → 계속 누르기 → 놓기 → 다시 누르기’에서 LED가 어떻게 될지 예상하세요.</label><textarea id="prediction3" data-record data-label="상태 변화 예측" placeholder="각 순간에 입력값과 requestOn 값을 함께 적어 보세요."></textarea>
+<div class="panel state-lab lesson-gap"><div class="circuit-title"><h3>2차시와 3차시, 같은 입력으로 비교하기</h3><span>화면 속 논리 모형</span></div><div class="two-col"><div class="sim-side"><span class="section-tag">2차시 · 입력을 바로 출력</span><div class="sim-led" id="direct-led"></div><p id="direct-state">입력 HIGH(1) · LED 꺼짐</p></div><div class="sim-side"><span class="section-tag">3차시 · 요청 상태를 기억</span><div class="sim-led" id="memory-led"></div><p id="memory-state">requestOn = false · LED 꺼짐</p></div></div><div class="model-actions"><button class="button" id="press3">버튼 누르기</button><button class="button" id="release3" disabled>버튼 놓기</button><button class="text-button" id="model-reset3">모형 처음으로</button></div><p id="model-status3" role="status">버튼 놓음 · 새 누름 0회</p><p class="note">‘누르기’를 선택하면 ‘놓기’를 선택할 때까지 눌린 상태가 유지됩니다. 기다려도 요청은 다시 바뀌지 않아요. 이 모형은 안정적으로 인식된 입력을 가정하며 실제 버튼 튐과 50 ms 판정 시간을 재현하지 않습니다. 아래에는 최근 8개 동작이 표시됩니다.</p><ol id="event-log3" class="event-log"><li>시작: 입력 HIGH / 요청 없음</li></ol></div>
+<div class="panel lesson-gap"><h3>왜 눌려 있는 동안 계속 뒤집으면 안 될까요?</h3><div class="quiz"><button data-answer="repeat">loop가 반복될 때마다 요청이 계속 바뀌기 때문이에요</button><button data-answer="power">LED가 항상 더 밝아지기 때문이에요</button><p id="quiz3-feedback" class="feedback" aria-live="polite"></p></div></div>
+</section>
+<section id="run">
+<div class="section-head"><div><span class="eyebrow">03 · CONNECT & RUN</span><h2>회로는 그대로, 코드에 기억을 더해요.</h2></div><span class="duration">10분</span></div>
+<div class="safety"><b>회로를 바꿀 때는 USB를 분리하세요.</b> 2차시와 같은 GPIO 18 버튼, GPIO 23 LED, 330 Ω 저항을 사용합니다. 새로운 부품은 필요하지 않습니다. 버튼 접점과 공통 GND를 먼저 확인하세요.</div>
+<p><a class="button" href="lesson2.html#lesson2-wiring">2차시 브레드보드 연결 지도 ↗</a></p>
+<div class="concept-strip"><div><span>입력</span><strong>GPIO 18 ↔ 버튼 ↔ GND</strong><small>INPUT_PULLUP · 누르면 LOW</small></div><b>→</b><div class="selected"><span>처리</span><strong>새 누름 → 상태 반전</strong><small>requestOn = !requestOn</small></div><b>→</b><div><span>출력</span><strong>GPIO 23 → 저항 → LED</strong><small>LED − → GND로 연결</small></div></div>
+<div class="two-col"><article class="panel"><h3>학생이 설명할 핵심 부분</h3><pre class="core-code">if (previousStable == HIGH &amp;&amp;
+    stableButton == LOW) {
+  requestOn = !requestOn;
+}</pre><p><code>HIGH → LOW</code>로 바뀐 순간만 새 누름으로 인정합니다. <code>!</code>는 true를 false로, false를 true로 뒤집습니다.</p><p class="note">requestOn을 loop 안에서 매번 false로 초기화하면 이전 요청을 기억할 수 없어요. 전체 코드에서는 함수 밖에 선언합니다.</p></article><article class="panel"><h3>선생님이 제공하는 버튼 튐 처리</h3><p>실제 버튼은 한 번 눌러도 접점이 짧게 흔들릴 수 있어요. 아래 코드는 원래 입력이 바뀐 뒤 <b>50 ms 이상 같은 값</b>일 때 안정된 입력으로 받아들입니다.</p><p class="note">50 ms는 수업용 시작값입니다. 버튼에 따라 교사가 확인해야 합니다. 아주 짧은 누름은 인식되지 않을 수 있어요. 오늘은 시간 처리 코드를 모두 외우기보다 새 누름을 한 번만 인정하는 이유에 집중합니다.</p></article></div>
+<details open class="setup"><summary>전체 코드 · 상태 기억 + 버튼 튐 처리</summary><div class="code-side lesson-gap"><div class="code-toolbar"><span>remember_request.ino</span><button id="copy-code3">코드 복사</button></div><pre><code id="code3">const int LED_PIN = 23;
+const int BUTTON_PIN = 18;
+const unsigned long DEBOUNCE_MS = 50;
+
+bool requestOn = false;   // 버튼을 놓아도 유지할 요청 상태
+int lastRaw = HIGH;      // 직전에 읽은 원래 입력
+int stableButton = HIGH; // 안정된 입력
+unsigned long lastChangeAt = 0;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  digitalWrite(LED_PIN, LOW);
+  Serial.begin(115200);
+  // 시작할 때 이미 눌린 버튼은 새 요청으로 세지 않아요.
+  lastRaw = digitalRead(BUTTON_PIN);
+  stableButton = lastRaw;
+  lastChangeAt = millis();
+  Serial.println("READY: request OFF");
+}
+
+void loop() {
+  int raw = digitalRead(BUTTON_PIN);
+  unsigned long now = millis();
+
+  // 원래 입력이 바뀌면 안정 시간을 다시 측정해요.
+  if (raw != lastRaw) {
+    lastChangeAt = now;
+    lastRaw = raw;
+  }
+
+  // 같은 값이 50 ms 이상 유지되어야 새 입력으로 인정해요.
+  if (now - lastChangeAt &gt;= DEBOUNCE_MS &amp;&amp; raw != stableButton) {
+    int previousStable = stableButton;
+    stableButton = raw;
+
+    // 안정된 입력이 HIGH -&gt; LOW로 변한 순간에만 반전!
+    if (previousStable == HIGH &amp;&amp; stableButton == LOW) {
+      requestOn = !requestOn;
+      digitalWrite(LED_PIN, requestOn ? HIGH : LOW);
+      Serial.println(requestOn ? "Request ON" : "Request OFF");
+    }
+  }
+}
+</code></pre></div><p><a href="remember_request.ino" download>Arduino 스케치 파일 내려받기 ↓</a></p></details>
+<details open class="setup"><summary>업로드하고 확인하기</summary><ol><li>2차시 회로를 짝과 점검한 후 USB를 연결합니다. 보드와 포트 선택은 2차시와 같습니다.</li><li>새 스케치에 전체 코드를 붙여 넣고 검증(✓) → 업로드(→)합니다. 이전 코드에 덧붙이지 않습니다.</li><li>시리얼 모니터를 115200 baud로 열고, 충분히 눌렀다가 놓아 봅니다. LED는 켜진 상태를 유지해야 합니다.</li><li>다시 눌렀다가 놓으면 꺼지는지, 3초 동안 눌러도 상태가 한 번만 바뀌는지 확인합니다.</li></ol><p class="note">시작할 때 이미 누르고 있던 버튼은 새 요청으로 세지 않습니다. 놓았다가 다시 눌러 보세요. 전원을 다시 켜면 requestOn은 false로 초기화됩니다.</p></details>
+</section>
+<section id="ai">
+<div class="section-head"><div><span class="eyebrow">04 · READ WITH AI</span><h2>AI의 설명을, 코드와 관찰로 확인해요.</h2></div><span class="duration">10분</span></div>
+<div class="table-scroll"><table class="test-table"><caption>변수가 맡은 역할을 구분하세요</caption><thead><tr><th scope="col">변수</th><th scope="col">기억하거나 읽는 것</th></tr></thead><tbody><tr><th scope="row">raw</th><td>지금 핀에서 읽은 값. 튐이 포함될 수 있어요.</td></tr><tr><th scope="row">lastRaw / lastChangeAt</th><td>이전 원래 입력 / 원래 입력이 마지막으로 바뀐 시각</td></tr><tr><th scope="row">stableButton / previousStable</th><td>안정된 현재 입력 / 변경 직전의 안정된 입력</td></tr><tr><th scope="row">requestOn</th><td>입력과 별개로 유지하는 요청 상태</td></tr></tbody></table></div>
+<div class="two-col"><div class="panel"><label class="field-label" for="mission3">우리 장치가 기억할 상태</label><select id="mission3"><option>도움 요청</option><option>발표 대기 신청</option><option>실험 진행 표시</option></select><label class="field-label" for="meaning3">켜짐·꺼짐·다시 누르기의 의미를 정하세요.</label><textarea id="meaning3" data-record data-label="상태의 의미" placeholder="예: 켜짐은 도움 요청, 다시 눌러 꺼짐은 요청 취소. 접수 완료와는 구분한다."></textarea><label class="field-label" for="question3">AI에게 확인하고 싶은 나의 질문</label><textarea id="question3" data-record data-label="AI에게 묻는 질문" placeholder="예: 놓았을 때도 requestOn이 true일 수 있는 이유는?"></textarea></div><div class="prompt-card"><div class="code-toolbar"><span>AI 코드 탐구 질문</span><button id="copy-prompt3">질문 복사</button></div><p id="prompt3"></p><p class="note">질문 뒤에 전체 코드를 붙여 넣으세요. 학교에서 허용한 AI 계정을 사용하고 개인정보는 넣지 않아요. 이 페이지는 AI에 자동으로 연결되지 않습니다.</p></div></div>
+<div class="verify-row"><div><b>01. 설명 찾기</b><p>AI가 설명한 변수와 조건이 실제 코드에 있는지 표시합니다.</p></div><div><b>02. 반례 시험</b><p>길게 누르기와 놓기를 시험해 ‘새 누름에서만 반전’이라는 설명을 확인합니다.</p></div><div><b>03. 한 가지 개선</b><p>목적에 맞게 시리얼 메시지나 안내 표지를 수정하고, 짝이 같은 의미로 이해하는지 확인합니다.</p></div></div>
+<details><summary>AI를 쓸 수 없거나 코드가 어려울 때</summary><p>짝이 질문자가 되어 ‘놓았는데 LED가 왜 켜져 있지?’, ‘requestOn은 언제 바뀌지?’를 묻습니다. 위 변수 표와 핵심 부분을 보고 실제 동작으로 설명하세요. 시간 처리 부분은 교사의 안내를 받아 그대로 사용합니다.</p></details>
+</section>
+<section id="test">
+<div class="section-head"><div><span class="eyebrow">05 · TEST & REVISE</span><h2>한 번의 성공보다, 반복해도 같은 결과.</h2></div><span class="duration">8분</span></div>
+<p class="lead">보드를 리셋해 요청 없음에서 시작하세요. 한 사람은 조작하고 다른 사람은 입력·LED·시리얼 메시지를 확인한 뒤 역할을 바꿉니다. 실패한 항목은 원인을 고쳐 다시 시험합니다.</p>
+<div class="table-scroll"><table class="test-table"><caption>아래 순서대로 시험하고 예상과 실제를 비교하기</caption><thead><tr><th scope="col">상황</th><th scope="col">기본 코드 예상</th><th scope="col">실제 관찰 · 재시험</th></tr></thead><tbody>
+<tr><th scope="row">① 한 번 누르고 놓기</th><td>켜진 채 유지</td><td><input id="test-one3" data-record data-label="한 번 누르고 놓기" aria-label="한 번 누르고 놓기 관찰"></td></tr>
+<tr><th scope="row">② 다시 누르고 놓기</th><td>꺼진 채 유지</td><td><input id="test-two3" data-record data-label="다시 누르고 놓기" aria-label="다시 누르고 놓기 관찰"></td></tr>
+<tr><th scope="row">③ 3초 누르고 놓기</th><td>한 번만 바뀌어 켜짐 유지</td><td><input id="test-hold3" data-record data-label="길게 누르고 놓기" aria-label="길게 누르고 놓기 관찰"></td></tr>
+<tr><th scope="row">④ 리셋 버튼 누르기</th><td>요청 없음 · LED 꺼짐</td><td><input id="test-reset3" data-record data-label="리셋 후 관찰" aria-label="리셋 후 관찰"></td></tr>
+</tbody></table></div>
+<div class="two-col"><details><summary>길게 누르면 여러 번 바뀌어요</summary><p>단순히 LOW인 동안 반전시키고 있지 않은지 확인하세요. HIGH에서 LOW로 바뀌는 순간만 처리해야 합니다. AI가 버튼 튐 처리나 안정된 입력 비교를 제거하지 않았는지도 확인하세요.</p></details><details><summary>눌러도 반응하지 않거나 바로 꺼져요</summary><p>2차시처럼 입력이 1과 0으로 바뀌는지 먼저 점검합니다. 충분히 누르고 놓은 뒤 다시 눌러 보세요. requestOn을 loop 안에서 초기화하거나, 놓을 때 LED를 무조건 끄는 코드가 남아 있지 않은지 확인합니다.</p></details></div>
+</section>
+<section id="reflect">
+<div class="section-head"><div><span class="eyebrow">06 · REFLECT & TRANSFER</span><h2>기억하는 장치, 더 나은 규칙은?</h2></div><span class="duration">5분</span></div>
+<div class="journal"><label for="explain3">01 / 입력 HIGH인데 LED는 켜져 있을 수 있는 이유는?</label><textarea id="explain3" data-record data-label="입력과 상태의 차이 설명" placeholder="입력은 …, requestOn은 …을 뜻하기 때문에…"></textarea><label for="feedback3">02 / AI 설명이나 짝의 의견을 어떻게 검증하고 수정했나요?</label><textarea id="feedback3" data-record data-label="검증과 수정" placeholder="예상, 실제 증거, 피드백, 바꾼 부분과 이유를 적어요."></textarea><label for="improve3">03 / 실수로 요청을 취소하지 않으려면 어떤 규칙이 필요할까요?</label><textarea id="improve3" data-record data-label="새로운 규칙 제안" placeholder="예: 취소는 길게 누르기로 구분하기. 누구에게 편리하고 어떤 점을 더 시험해야 할까?"></textarea><div class="journal-actions"><button class="button" id="download3">3차시 탐구 기록 내려받기 ↓</button><button class="text-button" id="reset3">3차시 기록 지우기</button><span id="save-status3" role="status">이 브라우저에만 자동 저장 · 제출되지 않아요</span></div><p class="note">1·2차시 기록과 별도로 저장합니다. 공용 PC에서는 기록을 내려받은 후 지워 주세요. 모형 상태 초기화와 탐구 기록 삭제는 별개입니다.</p></div>
+<details class="teacher"><summary>교사용 운영 · 평가 · 교육과정 정합성</summary><p><b>45분:</b> 문제 발견 5 → 상태 규칙 7 → 코드 실행 10 → AI 코드 탐구 10 → 짝 검증 8 → 성찰 5분. 교사는 회로와 전체 코드를 사전 확인합니다. 실제 보드 업로드·점등 검증은 별도로 필요합니다.</p><p><b>학습 연결:</b> 정보 교과의 변수·조건·반복과 피지컬 컴퓨팅에 연결한 동아리 활동입니다. 핵심 개념은 입력, 변화 감지, 상태 기억이며 ‘현재 출력은 현재 입력뿐 아니라 이전에 저장한 상태에도 영향을 받는다’는 아이디어를 탐구합니다. 특정 학년 성취기준의 달성을 한 차시만으로 판정하지 않습니다.</p><p><b>맞춤 지원:</b> 기본 학생은 핵심 조건과 requestOn의 역할을 설명하고, 버튼 튐 처리는 제공된 코드를 사용합니다. 빠른 학생은 취소와 접수 완료를 구분하는 상태 규칙을 설계합니다. 한 번에 상태를 늘리기보다 왜 필요한지 사용자 관점에서 설명하게 합니다.</p><p><b>공통 평가 준거:</b> 입력과 요청 상태 구분, 길게 누르기·놓기·재누름 검증, AI 제안과 짝 피드백에 근거한 수정 이유를 관찰과 기록으로 확인합니다. ‘예상은? → 어떤 변수에서 증거를 찾았니? → 무엇을 다시 시험할까?’로 피드백합니다.</p><p><b>대구미래역량교육과정 정합성:</b> 불편 발견과 신호 의미 선택은 자율성, 예측–실험–재시험은 주도성, 역할 교대와 공동 검증은 관계성을 반영합니다. 창의융합적 사고는 상태 변화 설명, 공감·소통은 신호 해석 비교, 자기관리는 안전·시험 기록, 공동체 역량은 실수로 취소되지 않는 사용 규칙 제안으로 관찰합니다. 목표–활동–평가를 같은 수행 증거로 연결했습니다.</p></details>
+</section>
+<footer><a class="brand" href="./">ESP32 <b>LAB</b></a><p>미래를 배운다 함께 성장한다 · 경구중학교 프로그래밍 동아리</p><p><a href="lesson2.html">← 2차시 다시 보기</a> · <a href="https://docs.arduino.cc/built-in-examples/digital/StateChangeDetection/" target="_blank" rel="noopener">Arduino 상태 변화 감지</a> · <a href="https://docs.arduino.cc/built-in-examples/digital/Debounce/" target="_blank" rel="noopener">Arduino 버튼 튐 처리</a></p><p class="note">ESP32-WROOM-32 계열 · GPIO 18 버튼 / GPIO 23 LED · 화면 모형은 전기 회로 시뮬레이터가 아닙니다.</p></footer>
+</main><div id="toast" role="status" aria-live="polite"></div>
+</body></html>

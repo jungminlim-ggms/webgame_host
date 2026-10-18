@@ -18,3 +18,6 @@ GitHub Pages: https://jungminlim-ggms.github.io/webgame_host/esp32/
 
 ## 2차시 추가
 lesson2.html: 버튼 입력으로 도움 요청 신호 만들기 (45분). 첫 화면의 차시 선택으로 이동합니다. GPIO 18 INPUT_PULLUP, GPIO 23 LED 출력. 2차시 기록은 별도 localStorage 키로 저장합니다. 실제 버튼 접점 및 보드 업로드는 수업 전 교사가 검증해야 합니다.
+
+## 3차시 추가
+lesson3.html: 요청을 기억하는 LED (45분). 기존 GPIO 18 버튼·GPIO 23 LED 회로를 유지합니다. 안정된 HIGH→LOW에서만 요청 상태를 반전하고, 원래 입력이 50 ms 유지된 뒤 반영하는 코드를 제공합니다. remember_request.ino와 페이지의 전체 코드는 동일합니다. 화면 모형은 안정된 입력의 논리 비교용이며 버튼 튐 시간은 재현하지 않습니다. 기록 저장 키는 esp32-lab-lesson3-v1입니다.
